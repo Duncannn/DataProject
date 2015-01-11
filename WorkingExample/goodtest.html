@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+.city {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+.legend {
+  padding: 5px;
+  font: 10px sans-serif;
+  background: yellow;
+  box-shadow: 2px 2px 1px #888;
+}
+
+#investOppert {
+    float:right;
+    clear:right;
+    border:1px solid #aaa;
+    display: inline-block;
+    word-wrap: break-word;
+    width:300px;
+    height:300px;
+    background-color:#f9f9f9;
+    padding-left:10px;
+    padding-right:10px;
+    margin-right: 50px;
+    margin-left:50px;
+    margin-top:30px;
+    text-align: center;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script>
+var k = 0,
+    dateToMaturity = 20,
+    thisAmount = [0,0,0,0,0,0,0,0],
+    thisPrice = [];
+var cities = 0;
+var totalInvestment = 100000;
+var margin = {top: 10, right: 100, bottom: 400, left: 40},
+    margin2 = {top: 330, right: 10, bottom: 320, left: 40},
+    margin3 = {top: 450, right: 10, bottom: 30, left: 40},
+    width = 825 - margin.left - margin.right,
+    height = 700 - margin.top - margin.bottom,
+    height2 = 700 - margin2.top - margin2.bottom,
+    height3 = 700 - margin3.top - margin3.bottom;
+
+var parseDate = d3.time.format("%d-%m-%Y").parse,
+    bisectDate = d3.bisector(function(d) { return d.date; }).left,
+    formatValue = d3.format(",.2f"),
+    formatCurrency = function(d) { return "$" + formatValue(d); };
+
+var x = d3.time.scale().range([0, width]),
+    x2 = d3.time.scale().range([0, width]),
+    x3 = d3.scale.linear().range([0,width]),
+    y = d3.scale.linear().range([height, 0]),
+    y2 = d3.scale.linear().range([height2, 0]);
+    y3 = d3.scale.linear().range([height3, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+    xAxis3 = d3.svg.axis().scale(x3).orient("bottom"),
+    yAxis = d3.svg.axis().scale(y).orient("left");
+    yAxis3 = d3.svg.axis().scale(y3).orient("left");
+
+var brush = d3.svg.brush()
+    .x(x2)
+    .on("brush", brushed);
+
+var line1 = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.price); });
+
+var line2 = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x2(d.date); })
+    .y(function(d) { return y2(d.price); });
+
+var line3 = d3.svg.line()
+    .interpolate("basis")
+    .x(function(d) { return x3(d.key); })
+    .y(function(d) { return y3(d.price); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var main = svg.append("g")
+    .attr("class", "main")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var below = svg.append("g")
+    .attr("class", "below")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+var payoff = svg.append("g")
+    .attr("class", "payoff")
+    .attr("transform", "translate(" + margin3.left + "," + margin3.top + ")")
+
+var number = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .style("display", "none");
+
+
+d3.json("AllData.json", function(error, data) {
+  // color.domain = all names except the string "date"
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+  data.forEach(function(d) {
+    d.date = parseDate(d.date);
+  });
+  data.sort(function(a, b) {
+    return a.date - b.date;});
+
+  // Cities is a variable with length 3 where name the 3 keys
+  cities = color.domain().map(function(name) {
+    return {
+      name: name,
+      values: data.map(function(d) {
+        return {date: d.date, price: +d[name]};
+      })
+    };
+  });
+
+  for (i = 0; i < cities.length; i++) {
+    thisPrice.push(cities[i].values[(cities[i].values).length-1].price)
+  }
+
+// --------------------------------------------------------------------
+// Domains
+// --------------------------------------------------------------------
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+
+  y.domain([
+    0,
+    d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.price; }); })
+  ]);
+
+  x2.domain(x.domain());
+  y2.domain(y.domain());
+
+// --------------------------------------------------------------------
+// Main graph
+// --------------------------------------------------------------------
+
+  main.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  main.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("price (ºF)");
+
+  var city = main.selectAll(".city")
+      .data(cities)
+    .enter().append("g")
+      .attr("class", "city");
+
+  city.append("path")
+      .attr("id", function(d,i) {return d.name})
+      .attr("d", function(d) { return line1(d.values); })
+      .style("stroke", function(d) { return color(d.name); })
+      .style("fill", "none")
+      .style("stroke-width", "1.5px");
+
+// --------------------------------------------------------------------
+// Legend
+// --------------------------------------------------------------------
+
+space = height/cities.length
+
+var legend = svg.append("g")
+    .attr("class", "legend") 
+      
+    legend.selectAll('text')
+      .data(cities)
+      .enter()
+      .append("text")
+      .attr("x", width +margin.right/2)
+      .attr("y", function(d, i){ return (i+0.5) * space + margin.top;})
+      .style("fill", function(d) {return color(d.name)})
+      .text(function(d) { return d.name;})
+      .on("click", function(d, i){
+        var active  = d.active ? false : true;
+                k = i
+                payoffResult()
+                stockInvest()
+                payoffLegendName()
+                document.getElementById("money").innerHTML = "Money left: $" +totalInvestment
+                document.getElementById("stock").innerHTML = "Investing in " +cities[k].name;
+                document.getElementById("stockPrice").innerHTML = "Current price  " +thisPrice[k];
+                newOpacity = active ? 2 : 5;
+                newStroke = active ? 0.2 : 1;
+                d.active = active
+                name = d.name
+                if (active == true) {
+                    console.log("#tag"+d.name, active)
+                    onOpacity = 5;
+                    offOpacity = 2;
+                    // Hide or show the elements based on the ID
+                    d3.select("#"+d.name.replace(/\s+/g, ''))
+                        .transition().duration(100) 
+                        .style("stroke-width", onOpacity)
+                        .style("opacity", 1);
+                    // Update whether or not the elements are active
+                    for (j = 0; j < cities.length; j++) {
+                        if (j != i) {
+                            d3.select("#"+cities[j].name)
+                              .transition().duration(100) 
+                              .style("stroke-width", offOpacity)
+                              .style("opacity", 0.5);
+                              cities[j].active = false;
+                    };
+                };
+                } else {
+                    for (j = 0; j < cities.length; j++) {
+                        d3.select("#"+cities[j].name)
+                          .transition().duration(100) 
+                          .style("stroke-width", 2)
+                          .style("opacity", 1);
+                    }
+                }
+      });
+// --------------------------------------------------------------------
+// Brush Section
+// --------------------------------------------------------------------
+
+  below.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height2 + ")")
+      .call(xAxis2);  
+
+  var city2 = below.selectAll(".city2")
+      .data(cities)
+    .enter().append("g")
+      .attr("class", "city2")
+
+  city2.append("path")
+      .attr("class", "line")
+      .attr("d", function(d) { return line2(d.values); })
+      .style("stroke", function(d) { return color(d.name); });
+
+  below.append("g")
+      .attr("class", "x brush")
+      .call(brush)
+    .selectAll("rect")
+      .attr("y", -6)
+      .attr("height", height2 + 7);  
+
+// --------------------------------------------------------------------
+// Tooltip Thing
+// --------------------------------------------------------------------
+
+  number.append("circle")                                 
+      .attr("class", "y")                                
+      .style("fill", "none")                             
+      .style("stroke", "black")                           
+      .attr("r", 4);
+
+  number.append("text")
+      .attr("class", "y2")
+      .attr("dx", -2)
+      .attr("dy", -10)
+      .style("font-size", "15px");
+
+  main.append("rect")                                     
+      .attr("width", width)                              
+      .attr("height", height+margin.bottom/3)                            
+      .style("fill", "none")                             
+      .style("pointer-events", "all")                    
+      .on("mouseover", function() { number.style("display", null); })
+      .on("mouseout", function() { number.style("display", "none"); })
+      .on("mousemove", mousemove); 
+
+  function mousemove() {
+    var x0 = x.invert(d3.mouse(this)[0]),              
+        i = bisectDate(cities[k].values, x0, 1),                   
+        d0 = cities[k].values[i - 1],                              
+        d1 = cities[k].values[i];                             
+        d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+    number.select("circle.y")                           
+        .attr("transform",                             
+              "translate(" + x(d.date) + "," +         
+                             y(d.price) + ")");
+    number.select("text.y2")
+        .attr("transform",
+              "translate(" + x(d.date) + "," +
+                             y(d.price) + ")")
+        .text(formatCurrency(d.price));   
+    }
+
+// --------------------------------------------------------------------
+// Payoff Thing   (start at S = 20) CHECK BRUSH THING AND JUST CHANGE THE AXES AND LINE DYNAMICALLY
+// --------------------------------------------------------------------    
+
+  // Initial empty graph
+  x3.domain([0,0]);
+  y3.domain([0,0]);
+  payoffData = [[],[],[],[],[],[],[],[]]
+  payoff.append("path")
+        .datum(payoffData[k])
+        .attr("class", "line")
+        .attr("d", line3)
+        .style("stroke-dasharray", 5.5);
+  payoff.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height3/2 + ")")
+        .call(xAxis3)
+        .append("text")
+        .attr("y", 35)
+        .attr("x", width-30)
+        .text("price ($)");
+
+    payoff.append("g")
+        .attr("class", "y axis")
+        .call(yAxis3)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("profit ($)");
+
+
+  // Graph after update  
+  window.payoffResult = function() {
+    shares = 1 
+    callprice = -3
+    payoffData[k] = []
+    if (shares == 1) {
+      for (i=-20; i<=20; i++){
+        payoffData[k].push({
+          name: "shares",
+          key: thisPrice[k] + i,
+          price: i*thisAmount[k]
+        })
+      }
+    } else {
+
+    for (i=0; i<30; i++) {
+      if (i<15) {
+        payoffData.push({
+          key: i+20,
+          price: callprice
+        })
+      } else {
+        payoffData.push({
+          key: i+20,
+          price: callprice+i-14
+        })
+      } 
+    }
+  }
+    dom = d3.extent(payoffData[k], function(d) { return d.price; })
+    x3.domain(d3.extent(payoffData[k], function(d) { return d.key; }));
+    y3.domain(dom);
+    intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]))
+    // Height / max-min or something
+    if (payoffData[k][0].name == "shares") {
+      payoff.select(".line")
+            .datum(payoffData[k])
+            .attr("d", line3)
+            .style("stroke", function() {
+              if (thisAmount[k] == 0) {return "white";}
+              else {return "steelblue";}
+            });
+      payoff.select(".x.axis").call(xAxis3)
+      payoff.select(".y.axis").call(yAxis3)
+    } else if (payoffData[0].name == "option") {
+
+    } else {
+
+    }
+  }
+
+// --------------------------------------------------------------------
+// Payoff Legend
+// -------------------------------------------------------------------- 
+  
+  var payoffLegend = svg.append("g")
+    .attr("class", "payoffLegend")
+    
+
+  payoffLegend.append("text")
+      .attr("x", width +margin.right/2)
+      .attr("y", 450)
+      .style("fill", color(cities[k].name))
+      .text(cities[k].name)
+
+  payoffLegend.append("text")
+      .attr("x", width +margin.right/2)
+      .attr("y", 470)
+      .text(thisAmount[k] +" stocks")
+
+  payoffLegend.append("text")
+      .attr("x", width +margin.right/2)
+      .attr("y", 490)
+      .text(thisAmount[k] +" options")
+
+  window.payoffLegendName = function() {
+      payoffLegend.select("text:nth-child(1)")
+                  .style("fill", color(cities[k].name))
+                  .text(cities[k].name)
+      payoffLegend.select("text:nth-child(2)")
+                  .text(thisAmount[k] +" stocks")
+    }
+
+// --------------------------------------------------------------------
+// END OF D3.JSON(){}
+// --------------------------------------------------------------------  
+});
+
+// --------------------------------------------------------------------
+// Brush function
+// --------------------------------------------------------------------
+
+function brushed() {
+  x.domain(brush.empty() ? x2.domain() : brush.extent());
+  main.select(".x.axis").call(xAxis);
+  for (i = 0; i<cities.length; i++) {
+    main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
+  };
+}
+
+// --------------------------------------------------------------------
+// Type of investments 
+// --------------------------------------------------------------------
+
+function stockInvest() {
+    e = document.getElementById("investmentType");
+    strUser = e.options[e.selectedIndex].text;
+    console.log(strUser)
+    if (strUser === "Shares") {
+        document.getElementById("otype").innerHTML = '<br><input type="text" id="amount" onkeypress="searchKeyPress(event);">'
+    } else if (strUser === "Option Strategy") {
+        document.getElementById("otype").innerHTML = "Some option strategies"
+    } else {
+        document.getElementById("otype").innerHTML = "List of all the options and you can check some"
+    }
+}
+
+// --------------------------------------------------------------------
+// Enter key in search field
+// --------------------------------------------------------------------
+
+function searchKeyPress(e) {
+    if (e.keyCode == 13)
+        {   
+            console.log("wtf")
+            totalInvestment = 100000;
+            thisAmount[k] = document.getElementById("amount").value;
+            for (i = 0; i< cities.length; i++){
+              totalInvestment -= (thisPrice[i]*thisAmount[i])  
+            }        
+            document.getElementById("money").innerHTML = "Money left: $" +totalInvestment.toFixed(2)
+            payoffResult();
+            console.log(thisPrice)
+            payoffLegendName()
+            if (totalInvestment < 0) {alert("Not enough money")}
+        }};
+
+// --------------------------------------------------------------------
+// Investment results
+// --------------------------------------------------------------------
+
+function results() {}
+
+
+// --------------------------------------------------------------------
+// END OF JAVASCRIOT
+// --------------------------------------------------------------------
+
+</script>
+<div id="investOppert">
+    <h2 id="stock">No stock selected</h2>
+    <p id="money"></p>
+    <p>Choose your investment type<p>
+    <select id="investmentType">
+    <option value="value1">Shares</option>
+    <option value="value2">Option Strategy</option>
+    <option value="value3">Single Option</option>
+    </select>
+    <p id="investType"></p>
+    <p id="stockPrice"></p>
+    <p id="otype"></p>
+    <button onclick="results()">Invest!</button>
+</div>
