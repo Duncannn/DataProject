@@ -6,6 +6,7 @@ body {
   font: 10px sans-serif;
 }
 .city {
+  clip-path: url(#clip);
   fill: none;
   stroke: steelblue;
   stroke-width: 1.5px;
@@ -58,12 +59,16 @@ body {
 <body>
 <script src="http://d3js.org/d3.v3.js"></script>
 <script>
+// First one
+var optionsJSON;
 var k = 0,
     dateToMaturity = 20,
     thisAmount = [0,0,0,0,0,0,0,0],
-    thisPrice = [];
-var cities = 0;
-var totalInvestment = 100000;
+    newPrice = [0,0,0,0,0,0,0,0],
+    thisPrice = [],
+    cities = 0,
+    totalInvestment = 100000;
+    
 var margin = {top: 10, right: 100, bottom: 400, left: 40},
     margin2 = {top: 330, right: 10, bottom: 320, left: 40},
     margin3 = {top: 450, right: 10, bottom: 30, left: 40},
@@ -137,7 +142,7 @@ var number = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .style("display", "none");
 
-
+d3.json("optiondata.json", function(data) {optionsJSON = data;})
 d3.json("AllData.json", function(error, data) {
   // color.domain = all names except the string "date"
   color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
@@ -161,9 +166,9 @@ d3.json("AllData.json", function(error, data) {
     thisPrice.push(cities[i].values[(cities[i].values).length-1].price)
   }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Domains
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
   x.domain(d3.extent(data, function(d) { return d.date; }));
 
   y.domain([
@@ -174,9 +179,9 @@ d3.json("AllData.json", function(error, data) {
   x2.domain(x.domain());
   y2.domain(y.domain());
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Main graph
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
   main.append("g")
       .attr("class", "x axis")
@@ -205,9 +210,9 @@ d3.json("AllData.json", function(error, data) {
       .style("fill", "none")
       .style("stroke-width", "1.5px");
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Legend
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 space = height/cities.length
 
@@ -236,19 +241,18 @@ var legend = svg.append("g")
                 d.active = active
                 name = d.name
                 if (active == true) {
-                    console.log("#tag"+d.name, active)
                     onOpacity = 5;
                     offOpacity = 2;
                     // Hide or show the elements based on the ID
                     d3.select("#"+d.name.replace(/\s+/g, ''))
-                        .transition().duration(100) 
+                        .transition().duration(1000) 
                         .style("stroke-width", onOpacity)
                         .style("opacity", 1);
                     // Update whether or not the elements are active
                     for (j = 0; j < cities.length; j++) {
                         if (j != i) {
                             d3.select("#"+cities[j].name)
-                              .transition().duration(100) 
+                              .transition().duration(1000) 
                               .style("stroke-width", offOpacity)
                               .style("opacity", 0.5);
                               cities[j].active = false;
@@ -257,15 +261,15 @@ var legend = svg.append("g")
                 } else {
                     for (j = 0; j < cities.length; j++) {
                         d3.select("#"+cities[j].name)
-                          .transition().duration(100) 
+                          .transition().duration(1000) 
                           .style("stroke-width", 2)
                           .style("opacity", 1);
                     }
                 }
       });
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Brush Section
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
   below.append("g")
       .attr("class", "x axis")
@@ -289,9 +293,9 @@ var legend = svg.append("g")
       .attr("y", -6)
       .attr("height", height2 + 7);  
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Tooltip Thing
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
   number.append("circle")                                 
       .attr("class", "y")                                
@@ -332,80 +336,104 @@ var legend = svg.append("g")
         .text(formatCurrency(d.price));   
     }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Payoff Thing   (start at S = 20) CHECK BRUSH THING AND JUST CHANGE THE AXES AND LINE DYNAMICALLY
-// --------------------------------------------------------------------    
+// ------------------------------------------------------------------ 
 
   // Initial empty graph
   x3.domain([0,0]);
   y3.domain([0,0]);
   payoffData = [[],[],[],[],[],[],[],[]]
   payoff.append("path")
-        .datum(payoffData[k])
-        .attr("class", "line")
-        .attr("d", line3)
-        .style("stroke-dasharray", 5.5);
+      .datum(payoffData[k])
+      .attr("class", "line")
+      .attr("d", line3)
+      .style("stroke-dasharray", 5.5);
+
   payoff.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height3/2 + ")")
-        .call(xAxis3)
-        .append("text")
-        .attr("y", 35)
-        .attr("x", width-30)
-        .text("price ($)");
-
-    payoff.append("g")
-        .attr("class", "y axis")
-        .call(yAxis3)
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height3/2 + ")")
+      .call(xAxis3)
       .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("profit ($)");
+      .attr("y", 35)
+      .attr("x", width-30)
+      .text("price ($)");
 
+  payoff.append("g")
+      .attr("class", "y axis")
+      .call(yAxis3)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("profit ($)");
+
+  // Line for result
+  payoff.append("line")
+        .attr("class", "share")
+        .style("stroke", "red")
+        .style("stroke-dasharray", "3,3")
+        .style("opacity", 0.5)
+        .attr("y1", 0)
+        .attr("y2", height3);
+
+  var strikeLow = 312,
+      strikeLowPrice = 9.5,
+      strikeHigh = 330,
+      strikeHighPrice = 22.05;
+
+
+  window.finalPrice = function() {
+    payoff.select(".end")
+          .attr("transform",                             
+              "translate(" + x3(newPrice[k]) + "," +         
+                             0 + ")")
+  }    
 
   // Graph after update  
   window.payoffResult = function() {
-    shares = 1 
+    finalPrice()
+    shares = 0
     callprice = -3
-    payoffData[k] = []
-    if (shares == 1) {
-      for (i=-20; i<=20; i++){
-        payoffData[k].push({
-          name: "shares",
-          key: thisPrice[k] + i,
-          price: i*thisAmount[k]
-        })
-      }
-    } else {
+    payoffData[k] = [[],[]]
+    type1 = 0
+    for (i=-20; i<=20; i++){
+      payoffData[k][0].push({
+        name: "shares",
+        key: thisPrice[k] + i,
+        price: i*thisAmount[k]
+      })};
 
-    for (i=0; i<30; i++) {
-      if (i<15) {
-        payoffData.push({
-          key: i+20,
-          price: callprice
-        })
-      } else {
-        payoffData.push({
-          key: i+20,
-          price: callprice+i-14
-        })
-      } 
-    }
-  }
-    dom = d3.extent(payoffData[k], function(d) { return d.price; })
-    x3.domain(d3.extent(payoffData[k], function(d) { return d.key; }));
+    for (i=-20; i<=20; i++){
+      payoffData[k][1].push({
+        name: "shares",
+        key: thisPrice[k] + i,
+        price: i*thisAmount[k]*2
+      })};
+
+
+      // NOT WORKINGGG
+    yMax = 0;
+    yMin = 0;
+    for (i = 0; i<payoffData[k].length; i++)
+      { iMin = d3.min(payoffData[k][i]); console.log(iMin);
+        if (iMin < yMin) {yMin = iMin}}
+    console.log(yMin.price)
+    dom = d3.extent(payoffData[k][type1], function(d) { return d.price; })
+    x3.domain(d3.extent(payoffData[k][type1], function(d) { return d.key; }));
     y3.domain(dom);
     intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]))
-    // Height / max-min or something
-    if (payoffData[k][0].name == "shares") {
+    console.log(payoffData[k][type1])
+    // .data([payoffData[k]]); .datum(payoffData[k])
+    for (i=0; i<payoffData[k].length; i++)
+    if (payoffData[k][type1][0].name == "shares") {
       payoff.select(".line")
-            .datum(payoffData[k])
+            .data([payoffData[k][type1]])
             .attr("d", line3)
             .style("stroke", function() {
               if (thisAmount[k] == 0) {return "white";}
-              else {return "steelblue";}
+              else {return color(cities[k].name);}
             });
       payoff.select(".x.axis").call(xAxis3)
       payoff.select(".y.axis").call(yAxis3)
@@ -416,9 +444,9 @@ var legend = svg.append("g")
     }
   }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Payoff Legend
-// -------------------------------------------------------------------- 
+// ------------------------------------------------------------------
   
   var payoffLegend = svg.append("g")
     .attr("class", "payoffLegend")
@@ -448,14 +476,14 @@ var legend = svg.append("g")
                   .text(thisAmount[k] +" stocks")
     }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // END OF D3.JSON(){}
-// --------------------------------------------------------------------  
+// ------------------------------------------------------------------
 });
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Brush function
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 function brushed() {
   x.domain(brush.empty() ? x2.domain() : brush.extent());
@@ -465,14 +493,13 @@ function brushed() {
   };
 }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Type of investments 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 function stockInvest() {
     e = document.getElementById("investmentType");
     strUser = e.options[e.selectedIndex].text;
-    console.log(strUser)
     if (strUser === "Shares") {
         document.getElementById("otype").innerHTML = '<br><input type="text" id="amount" onkeypress="searchKeyPress(event);">'
     } else if (strUser === "Option Strategy") {
@@ -482,14 +509,13 @@ function stockInvest() {
     }
 }
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Enter key in search field
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 function searchKeyPress(e) {
     if (e.keyCode == 13)
         {   
-            console.log("wtf")
             totalInvestment = 100000;
             thisAmount[k] = document.getElementById("amount").value;
             for (i = 0; i< cities.length; i++){
@@ -497,21 +523,47 @@ function searchKeyPress(e) {
             }        
             document.getElementById("money").innerHTML = "Money left: $" +totalInvestment.toFixed(2)
             payoffResult();
-            console.log(thisPrice)
             payoffLegendName()
             if (totalInvestment < 0) {alert("Not enough money")}
         }};
 
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Investment results
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
-function results() {}
+function results() {
+  newPrice = thisPrice.slice();
+  for (i = 0; i < thisPrice.length; i++) {
+    for (j = 0; j<10; j++) {
+      newPrice[i] += Math.random()*2-1
+    }
+  }
+  prof = 0
+  for (i = 0; i < thisPrice.length; i++) {
+    prof += parseInt(thisAmount[i])*(newPrice[i]-thisPrice[i]);
+  }
+  finalPrice();
+  if (prof > 0) {alert("You made a profit of: $" +prof.toFixed(2))}
+  else {prof = -prof; alert("You made a loss of: $" +prof.toFixed(2))}
+}
 
 
-// --------------------------------------------------------------------
+// yRanges = []
+//     xRanges = []
+//     for (i=0; i < payoffData[k].length; i++) {
+//       yDom = d3.extent(payoffData[k][type1], function(d) { return d.price; })
+//       xDom = d3.extent(payoffData[k][type1], function(d) { return d.key; });
+//       yRanges.push(yDom)
+//       xRanges.push(xDom)
+//     console.log(yRanges)
+//     yDom = d3.extent(yRanges)  
+//     xDom = d3.extent(xRanges)
+//     x3.domain(xDom);
+//     y3.domain(yDom)
+
+// ------------------------------------------------------------------
 // END OF JAVASCRIOT
-// --------------------------------------------------------------------
+// ------------------------------------------------------------------
 
 </script>
 <div id="investOppert">
