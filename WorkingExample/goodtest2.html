@@ -4,6 +4,7 @@
 
 body {
   font: 10px sans-serif;
+  background-color: #FDFDFD;
 }
 .city {
   clip-path: url(#clip);
@@ -70,7 +71,11 @@ var k = 0,
     thisPrice = [],
     cities = 0,
     totalInvestment = 100000,
-    strUser = "";
+    strUser = "",
+    strike1,
+    price1,
+    strike2,
+    price2;
  
 // Margins   
 var margin = {top: 20, right: 100, bottom: 400, left: 130},
@@ -185,15 +190,18 @@ var toolTip1 = svg.append("g")
     .style("display", "none");
 
 // Load option data (NOT USING YET)
-d3.json("optionsDataBetter.json", function(data) {console.log(data); optionsJSON = data;})
+d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
 
 // Main data
 d3.json("AllData.json", function(error, data) {
+  console.log(optionsJSON)
   // Color domain are all names in the data except the date
   color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
 
   // Parse the date
-  data.forEach(function(d) {d.date = parseDate(d.date); });
+  data.forEach(function(d) {
+    d.date = parseDate(d.date);
+     });
 
   // Sort the date
   data.sort(function(a, b) {
@@ -463,13 +471,6 @@ d3.json("AllData.json", function(error, data) {
   y3.domain([0,0]);
   payoffData = [[],[],[],[],[],[],[],[]]
 
-  // Append an empty line
-  payoff.append("path")
-      .datum(payoffData[k])
-      .attr("class", "line")
-      .attr("d", line3)
-      .style("stroke-dasharray", 5.5);
-
   // Place the x axis
   payoff.append("g")
       .attr("class", "x axis")
@@ -491,12 +492,6 @@ d3.json("AllData.json", function(error, data) {
       .style("text-anchor", "end")
       .text("profit ($)");
 
-  // Hardcoded option data as an example
-  var strikeLow = 312,
-      strikeLowPrice = 9.5,
-      strikeHigh = 330,
-      strikeHighPrice = 22.05;
-
   // I actually have no idea what this is
   window.finalPrice = function() {
     payoff.select(".end")
@@ -511,28 +506,99 @@ d3.json("AllData.json", function(error, data) {
     // Data
     shares = 0
     callprice = -3
-    payoffData[k] = [[],[]]
+    payoffData[k] = [[],[],[],[],[]]
     type1 = 0
+
+    if (k == 0 ) {
+      firstOption = Math.floor(Math.random() * optionsJSON.Amazon.call.length)
+      strike1 = optionsJSON.Amazon.call[firstOption].strike;
+      price1 = optionsJSON.Amazon.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.Amazon.put.length)
+      strike2 = optionsJSON.Amazon.put[secondOption].strike;
+      price2 = optionsJSON.Amazon.put[secondOption].price;
+    } else if (k == 1) {
+      firstOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
+      strike1 = optionsJSON.Apple.call[firstOption].strike;
+      price1 = optionsJSON.Apple.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
+      strike2 = optionsJSON.Apple.put[secondOption].strike;
+      price2 = optionsJSON.Apple.put[secondOption].price;
+    } else if (k == 2) {
+      firstOption = Math.floor(Math.random() * optionsJSON.Colgate.call.length)
+      strike1 = optionsJSON.Colgate.call[firstOption].strike;
+      price1 = optionsJSON.Colgate.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.Colgate.put.length)
+      strike2 = optionsJSON.Colgate.put[secondOption].strike;
+      price2 = optionsJSON.Colgate.put[secondOption].price;
+    } else if (k == 3) {
+      firstOption = Math.floor(Math.random() * optionsJSON.Costco.call.length)
+      strike1 = optionsJSON.Costco.call[firstOption].strike;
+      price1 = optionsJSON.Costco.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.Costco.put.length)
+      strike2 = optionsJSON.Costco.put[secondOption].strike;
+      price2 = optionsJSON.Costco.put[secondOption].price;
+    } else if (k == 4) {
+      firstOption = Math.floor(Math.random() * optionsJSON.IBM.call.length)
+      strike1 = optionsJSON.IBM.call[firstOption].strike;
+      price1 = optionsJSON.IBM.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.IBM.put.length)
+      strike2 = optionsJSON.IBM.put[secondOption].strike;
+      price2 = optionsJSON.IBM.put[secondOption].price;
+    } else if (k == 5) {
+      firstOption = Math.floor(Math.random() * optionsJSON.MasterCard.call.length)
+      strike1 = optionsJSON.MasterCard.call[firstOption].strike;
+      price1 = optionsJSON.MasterCard.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.MasterCard.put.length)
+      strike2 = optionsJSON.MasterCard.put[secondOption].strike;
+      price2 = optionsJSON.MasterCard.put[secondOption].price;
+    } else if (k == 6) {
+      firstOption = Math.floor(Math.random() * optionsJSON.RalphLauren.call.length)
+      strike1 = optionsJSON.RalphLauren.call[firstOption].strike;
+      price1 = optionsJSON.RalphLauren.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.RalphLauren.put.length)
+      strike2 = optionsJSON.RalphLauren.put[secondOption].strike;
+      price2 = optionsJSON.RalphLauren.put[secondOption].price;
+    } else if (k == 7) {
+      firstOption = Math.floor(Math.random() * optionsJSON.Wynn.call.length)
+      strike1 = optionsJSON.Wynn.call[firstOption].strike;
+      price1 = optionsJSON.Wynn.call[firstOption].price;
+      secondOption = Math.floor(Math.random() * optionsJSON.Wynn.put.length)
+      strike2 = optionsJSON.Wynn.put[secondOption].strike;
+      price2 = optionsJSON.Wynn.put[secondOption].price;
+    }
+
+    // PRICE IS PROFIT...
     // Line 1
-    for (i=-20; i<=20; i++){
+    for (i=-50; i<=50; i++){
         payoffData[k][0].push({
           name: "shares",
           key: thisPrice[k] + i,
           price: i*thisAmount[k]
         })
     };
-    // Line 2
-    for (i=-20; i<=20; i++){
+    // line call amazon 312 (JUST USE A MAX FUNCTION!!! (ST-K))
+    for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
         payoffData[k][1].push({
-          name: "shares",
-          key: thisPrice[k] + i,
-          price: i*thisAmount[k]*2
-          })
-      };
-    // line call amazon 312
-    // for (i = strikeLow-5; i < strikeLow +5; i++){
+            name: "shares",
+            key: i,
+            price: 100*(d3.max([i-strike1,0]) - price1)
+        })
+    }
 
-    // }
+    for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
+        payoffData[k][2].push({
+            name: "shares",
+            key: i,
+            price: 100*(d3.max([strike2-i,0]) - price2)
+        })
+    }
+
+  for (i = 0; i < payoffData[k][2].length; i++){
+      payoffData[k][4].push({
+          key: payoffData[k][0][i].key,
+          price: payoffData[k][0][i].price+payoffData[k][1][i].price+payoffData[k][2][i].price
+      })
+  };
 
 
 
@@ -549,29 +615,43 @@ d3.json("AllData.json", function(error, data) {
     dom = [yMin, yMax]
 
     // Set the domains
-    x3.domain(d3.extent(payoffData[k][type1], function(d) { return d.key; }));
+    x3.domain(d3.extent(payoffData[k][0], function(d) { return d.key; }));
     y3.domain(dom);
+    intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]))
 
-    //intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]))
-    // Edit the payoff line and axes
-    //for (i=0; i<payoffData[k].length; i++) {
-    if (payoffData[k][type1][0].name == "shares") {
-      payoff.select(".line")
-            .data([payoffData[k][type1]])
-            .transition().duration(1000)
-            .attr("d", line3)
-            .style("stroke", function() {
-              if (thisAmount[k] == 0) {return "white";}
-              else {return color(cities[k].name);}
-            });
-      payoff.select(".x.axis").transition().duration(1000).call(xAxis3)
-      payoff.select(".y.axis").transition().duration(1000).call(yAxis3)
-    } else if (payoffData[0].name == "option") {
+  payoff.selectAll(".city3").remove()
 
-    } else {
+  if (payoffData[k][0][0].price != -0) {
+    
+    var city3 = payoff.selectAll(".city3")
+        .data(payoffData[k])
+      .enter().append("g")
+        .attr("class", "city3");
 
-    }
+    city3.append("path")
+        .attr("id", function(d,i) {return cities[k].name;})
+        .attr("d", function(d) {; return line3(d); })
+        .style("stroke", function(d,i) {
+            if (i == payoffData[k].length-1) {
+                return color(cities[k].name);
+            } else {return "maroon";}    
+        })
+        .style("opacity", 0)
+        .transition().duration(1500)
+        .style("opacity", 1)
+        .style("fill", "none")
+        .style("stroke-dasharray", function(d,i){
+            if (i == payoffData[k].length-1) {
+                return 0,0;}
+            else {return 5,5}
+        })
+        .style("stroke-width", "1.5px");
   }
+  payoff.select(".x.axis").transition().duration(1000)
+        .call(xAxis3)
+        .attr("transform", "translate(0," + height3*intersection+ ")");
+  payoff.select(".y.axis").transition().duration(1000).call(yAxis3);
+}
 
 // ------------------------------------------------------------------
 // Payoff Legend
@@ -623,10 +703,22 @@ d3.json("AllData.json", function(error, data) {
       // Set the main x domain to the brushed domain
       x.domain(brushx.empty() ? x2.domain() : brushx.extent());
       // Edit the x axis and the lines
-      main.select(".x.axis").call(xAxis);
-      for (i = 0; i<cities.length; i++) {
-          main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
-      };
+      if (brushx.empty()) {
+          main.select(".x.axis")
+              .transition().duration(1000)
+              .call(xAxis);
+          for (i = 0; i<cities.length; i++) {
+              main.select("#"+cities[i].name)
+                  .transition().duration(1000)
+                  .attr("d", function(d){return line1(d.values)});
+          };
+      } else {
+          main.select(".x.axis").call(xAxis);
+          for (i = 0; i<cities.length; i++) {
+              main.select("#"+cities[i].name)
+                  .attr("d", function(d){return line1(d.values)});
+          };
+      }
   }
 
   // Vertical brush
@@ -634,10 +726,21 @@ d3.json("AllData.json", function(error, data) {
       // Set the main y domain to the brushed domain
       y.domain(brushy.empty() ? y4.domain() : brushy.extent());
       // Edit the y axis and the lines
-      main.select(".y.axis").call(yAxis);
-      for (i = 0; i<cities.length; i++) {
-          main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
-      };
+      if (brushy.empty()) {
+          main.select(".y.axis")
+              .transition().duration(1000)
+              .call(yAxis);
+          for (i = 0; i<cities.length; i++) {
+              main.select("#"+cities[i].name)
+                  .transition().duration(1000)
+                  .attr("d", function(d){return line1(d.values)});
+          };
+      } else {
+          main.select(".y.axis").call(yAxis);
+          for (i = 0; i<cities.length; i++) {
+              main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
+          };
+      }
   }
 
 // ------------------------------------------------------------------

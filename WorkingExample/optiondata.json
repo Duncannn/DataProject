@@ -1754,7 +1754,7 @@
      {"strike":122, "price":0.2},
      {"strike":123, "price":0.25}
 ],
-"PUT MA January17":[
+"PUTMAJanuary17":[
      {"strike":25.5, "price":0.48},
      {"strike":34, "price":0.12},
      {"strike":36.5, "price":0.19},
@@ -1853,7 +1853,7 @@
      {"strike":124, "price":49.6},
      {"strike":125, "price":49.8}
 ],
-"CALL MA January23":[
+"CALLMAJanuary23":[
      {"strike":82, "price":6.15},
      {"strike":83, "price":5.32},
      {"strike":84, "price":3.8},
@@ -1868,7 +1868,7 @@
      {"strike":94, "price":0.25},
      {"strike":95, "price":0.17}
 ],
-"PUT MA January23":[
+"PUTMAJanuary23":[
      {"strike":72, "price":0.29},
      {"strike":75, "price":0.4},
      {"strike":76, "price":0.76},
@@ -1883,7 +1883,7 @@
      {"strike":89, "price":3.9},
      {"strike":90, "price":3.88}
 ],
-"CALL MA January30":[
+"CALLMAJanuary30":[
      {"strike":76, "price":11.03},
      {"strike":80, "price":7.45},
      {"strike":82, "price":6.6},
@@ -1900,7 +1900,7 @@
      {"strike":95, "price":0.38},
      {"strike":98, "price":0.31}
 ],
-"PUT MA January30":[
+"PUTMAJanuary30":[
      {"strike":70, "price":0.12},
      {"strike":74, "price":0.32},
      {"strike":75, "price":0.29},
@@ -1915,7 +1915,7 @@
      {"strike":90, "price":3.6}
 ],
 
-"CALL RL January17":[
+"CALLRLJanuary17":[
      {"strike":80, "price":83.5},
      {"strike":90, "price":79.7},
      {"strike":95, "price":85.1},
@@ -1945,7 +1945,7 @@
      {"strike":260, "price":1.4},
      {"strike":270, "price":0.11}
 ],
-"PUT RL January17":[
+"PUTRLJanuary17":[
      {"strike":75, "price":0.15},
      {"strike":85, "price":0.6},
      {"strike":105, "price":0.25},
@@ -1969,7 +1969,7 @@
      {"strike":250, "price":83.5},
      {"strike":270, "price":111.1}
 ],
-"CALL WYNN January2":[
+"CALLWYNNJanuary2":[
      {"strike":125, "price":24.85},
      {"strike":130, "price":8.8},
      {"strike":135, "price":15.3},
@@ -1991,7 +1991,7 @@
      {"strike":192.5, "price":0.46},
      {"strike":195, "price":1.15}
 ],
-"PUT WYNN January2":[
+"PUTWYNNJanuary2":[
      {"strike":125, "price":0.11},
      {"strike":130, "price":0.15},
      {"strike":135, "price":0.31},
@@ -2020,7 +2020,7 @@
      {"strike":185, "price":9.1},
      {"strike":187.5, "price":10.35}
 ],
-"CALL WYNN January9":[
+"CALLWYNNJanuary9":[
      {"strike":120, "price":15.1},
      {"strike":130, "price":13.25},
      {"strike":135, "price":18.4},
@@ -2047,7 +2047,7 @@
      {"strike":182.5, "price":0.83},
      {"strike":187.5, "price":0.48}
 ],
-"PUT WYNN January9":[
+"PUTWYNNJanuary9":[
      {"strike":120, "price":0.41},
      {"strike":125, "price":2.23},
      {"strike":130, "price":0.25},
@@ -2071,7 +2071,7 @@
      {"strike":170, "price":10.6},
      {"strike":172.5, "price":3.8}
 ],
-"CALL WYNN January17":[
+"CALLWYNNJanuary17":[
      {"strike":51, "price":150.65},
      {"strike":52, "price":150.65},
      {"strike":56, "price":138},
@@ -2186,7 +2186,7 @@
      {"strike":319, "price":0.32},
      {"strike":320, "price":0.32}
 ],
-"PUT WYNN January17":[
+"PUTWYNNJanuary17":[
      {"strike":71, "price":0.12},
      {"strike":72, "price":0.12},
      {"strike":76, "price":0.11},
@@ -2346,7 +2346,7 @@
      {"strike":369, "price":163.7},
      {"strike":370, "price":163.7}
 ],
-"CALL WYNN January23":[
+"CALLWYNNJanuary23":[
      {"strike":135, "price":7.25},
      {"strike":138, "price":6},
      {"strike":139, "price":13.68},
@@ -2369,7 +2369,7 @@
      {"strike":180, "price":1.2},
      {"strike":185, "price":0.41}
 ],
-"PUT WYNN January23":[
+"PUTWYNNJanuary23":[
      {"strike":115, "price":0.64},
      {"strike":120, "price":0.25},
      {"strike":125, "price":1.48},
@@ -2396,7 +2396,7 @@
      {"strike":177.5, "price":31.27},
      {"strike":180, "price":17.2}
 ],
-"CALL WYNN January30":[
+"CALLWYNNJanuary30":[
      {"strike":135, "price":12.9},
      {"strike":136, "price":12.8},
      {"strike":138, "price":10.13},
@@ -2415,7 +2415,7 @@
      {"strike":170, "price":0.79},
      {"strike":172.5, "price":0.72}
 ],
-"PUT WYNN January30":[
+"PUTWYNNJanuary30":[
      {"strike":115, "price":0.6},
      {"strike":120, "price":0.45},
      {"strike":125, "price":1.01},
