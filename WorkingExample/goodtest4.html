@@ -1,6 +1,53 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+#verticalline{
+  position: absolute;
+  color:grey;
+  top: 70px;
+  left: 900px;
+  height: 700px;
+  border-left: solid;
+}
+
+#horizontalline {
+  position: absolute;
+  color:grey;
+  left:5px;
+  top: 485px;
+  width: 895px;
+  border-top: solid;
+}
+
+#first {
+  background-color: black;
+  opacity: 0.7;
+  display:none;
+}
+#second {
+  display:none;
+}
+#third{
+  display:none;
+}
+#fourth {
+  display:none;
+}
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover{
+  fill:brown;
+}
+
+.bar2 {
+  fill: steelblue;
+}
+
+.bar2:hover{
+  fill:brown;
+}
 
 div{
   display: block;
@@ -45,15 +92,13 @@ body {
 
 #investOppert {
     position: absolute; 
-    top: 80px;
+    top: 50px;
     left: 900px;
     clear:right;
-    border:1px solid #aaa;
     display: inline-block;
     word-wrap: break-word;
     width:250px;
-    height:300px;
-    background-color:#fDfDfD;
+    height:200px;
     padding-left:10px;
     padding-right:10px;
     margin-right: 50px;
@@ -61,12 +106,20 @@ body {
     margin-top:30px;
     text-align: center;
 }
+
+#slider {
+  position: absolute;
+  top: 200px;
+  left: 925px;
+}
+
 #navbar {
   width:100%;
   height:60px;
   /*background-color: #802c59;*/
-  background-color: maroon;
-  border-bottom: 2px solid #CCC;
+  /*background-color: #1c94c6;    #CCC */
+  background-color:maroon;
+  border-bottom: 2px solid grey;
 }
 
 #headContainer {
@@ -90,35 +143,26 @@ body {
 }
 
 </style>
-<body>
 <script src="http://d3js.org/d3.v3.js"></script>
-<div id="navbar">
-  <div id="headContainer">
-    <div id="name">
-      <ul id="nav">
-        <li>Visualising Investment Returns</li>
-        <li>Visualize</li>
-        <li>About</li>
-        <li>Tour</li>
-      </ul>
+<body>
+  <div id="navbar">
+    <div id="headContainer">
+      <div id="name">
+        <ul id="nav">
+          <li>Visualising Investment Returns</li>
+          <li>Visualize</li>
+          <li> <a class="button" onclick="about()">About</a></li>
+          <li> <a class="button" onclick="tour()">Tour</a></li>
+        </ul>
+      </div>
     </div>
   </div>
-</div>
-<div id="investOppert">
-    <h2 id="stock">No stock selected</h2>
-    <p id="money"></p>
-    <p>Choose your investment type<p>
-    <p>Shares with a drag bag and options in a (clickable) bar chart<p>
-    <select id="investmentType" onclick="stockInvest()">
-    <option value="value1" checked>Shares</option>
-    <option value="value2">Option Strategy</option>
-    <option value="value3">Single Option</option>
-    </select>
-    <p id="investType"></p>
-    <p id="stockPrice"></p>
-    <p id="otype"></p>
-    <button onclick="results()">Invest!</button>
-</div>
+  <div id="investOppert">
+      <h1 id="stock">No stock selected</h1>
+      <h2 id="money"></h2>
+      <h3 id="stockPrice"></h3>
+      <button onclick="results()">Invest!</button>
+  </div>
 
 <script>
 // First one
@@ -131,7 +175,7 @@ var k = 0,
     newPrice = [0,0,0,0,0,0,0,0],
     thisPrice = [],
     cities = 0,
-    totalInvestment = 100000,
+    totalInvestment = 40000,
     strUser = "",
     strike1,
     price1,
@@ -139,20 +183,24 @@ var k = 0,
     price2;
  
 // Margins   
-var margin = {top: 20, right: 100, bottom: 400, left: 130},
-    margin2 = {top: 330, right: 10, bottom: 320, left: 130},
-    margin3 = {top: 450, right: 100, bottom: 55, left: 50},
-    margin4 = {top: 20, right: 730, bottom: 400, left: 30};
+var margin = {top: 20, right: 525, bottom: 400, left: 130},
+    marginxBrush = {top: 330, right: 525, bottom: 320, left: 130},
+    marginPayoff = {top: 450, right: 525, bottom: 55, left: 50},
+    marginyBrush = {top: 20, right: 1185, bottom: 400, left: 30},
+    marginbar = {top:400, right: 20, bottom: 80, left:950};
 
 // Width and heights
-var width = 825 - margin.left - margin.right,
-    width3 = 825 - margin3.left - margin3.right,
-    width4 = 825 - margin4.left - margin4.right,
+//margins right + 135
+var width = 1280 - margin.left - margin.right,
+    width3 = 1280 - marginPayoff.left - marginPayoff.right,
+    width4 = 1280 - marginyBrush.left - marginyBrush.right,
+    widthbar = 1280 - marginbar.left - marginbar.right,
 
     height = 700 - margin.top - margin.bottom,
-    height2 = 700 - margin2.top - margin2.bottom,
-    height3 = 700 - margin3.top - margin3.bottom,
-    height4 = 700 - margin4.top - margin4.bottom;
+    height2 = 700 - marginxBrush.top - marginxBrush.bottom,
+    height3 = 700 - marginPayoff.top - marginPayoff.bottom,
+    height4 = 700 - marginyBrush.top - marginyBrush.bottom;
+    heightbar = (700 - marginbar.top - marginbar.bottom)/2;
 
 // Date and money elements
 var parseDate = d3.time.format("%d-%m-%Y").parse,
@@ -160,6 +208,7 @@ var parseDate = d3.time.format("%d-%m-%Y").parse,
     formatValue = d3.format(",.2f"),
     formatCurrency = function(d) { return "$" + formatValue(d); };
 
+document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
 // Colors
 var color = d3.scale.category10();
 
@@ -168,23 +217,28 @@ var x = d3.time.scale().range([0, width]),
     x2 = d3.time.scale().range([0, width]),
     x3 = d3.scale.linear().range([0,width3]),
     x4 = d3.time.scale().range([0, width4]),
+    //xbar = d3.scale.linear().range([widthbar, 0]),
+    xbar = d3.scale.linear().range([0, widthbar]),
 
     y = d3.scale.linear().range([height, 0]),
     y2 = d3.scale.linear().range([height2, 0]),
     y3 = d3.scale.linear().range([height3, 0]),
     y4 = d3.scale.linear().range([height4, 0]),
-    ybar = d3.scale.ordinal()
-             .rangeRoundBands([0, height], .2);
+    ybar1 = d3.scale.ordinal().rangeRoundBands([0, heightbar], .2);
+    ybar2 = d3.scale.ordinal().rangeRoundBands([0, heightbar], .2);
 
 // Axes
 var xAxis = d3.svg.axis().scale(x).orient("bottom"),
     xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
     xAxis3 = d3.svg.axis().scale(x3).orient("bottom"),
     xAxis4 = d3.svg.axis().scale(x4).orient("bottom"),
+    xAxisbar = d3.svg.axis().scale(xbar).orient("bottom").ticks(8),
 
-    yAxis = d3.svg.axis().scale(y).orient("left");
-    yAxis3 = d3.svg.axis().scale(y3).orient("left");
+    yAxis = d3.svg.axis().scale(y).orient("left"),
+    yAxis3 = d3.svg.axis().scale(y3).orient("left"),
     yAxis4 = d3.svg.axis().scale(y4).orient("left");
+    yAxisbar1 = d3.svg.axis().scale(ybar1).orient("left")
+    yAxisbar2 = d3.svg.axis().scale(ybar2).orient("left")
 
 // Horizontal and vertical brushes
 var brushx = d3.svg.brush()
@@ -216,6 +270,10 @@ var line4 = d3.svg.line()
     .x(function(d) { return x4(d.date); })
     .y(function(d) { return y4(d.price); });
 
+// SLIDER
+
+
+
 // Appending the SVG element
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -224,7 +282,7 @@ var svg = d3.select("body").append("svg")
 // Clip path for when using the brush
 svg.append("defs").append("clipPath")
     .attr("id", "clip")
-  .append("rect")
+    .append("rect")
     .attr("width", width)
     .attr("height", height);
 
@@ -236,21 +294,30 @@ var main = svg.append("g")
 // Two brush elements
 var xBrush = svg.append("g")
     .attr("class", "xBrush")
-    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+    .attr("transform", "translate(" + marginxBrush.left + "," + marginxBrush.top + ")");
 
 var yBrush = svg.append("g")
     .attr("class", "yBrush")
-    .attr("transform", "translate(" + margin4.left + "," + margin4.top + ")");
+    .attr("transform", "translate(" + marginyBrush.left + "," + marginyBrush.top + ")");
 
 // Payoff element
 var payoff = svg.append("g")
     .attr("class", "payoff")
-    .attr("transform", "translate(" + margin3.left + "," + margin3.top + ")")
+    .attr("transform", "translate(" + marginPayoff.left + "," + marginPayoff.top + ")");
 
 // Tooltip main graph
 var toolTip1 = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .style("display", "none");
+
+// Bar chart
+var chart1 = svg.append("g")
+    .attr("class", "chart1")
+    .attr("transform", "translate(" + marginbar.left +"," +marginbar.top +")");
+bar2 = +marginbar.top +heightbar+40 
+var chart2 = svg.append("g")
+    .attr("class", "chart2")
+    .attr("transform", "translate(" + marginbar.left +"," +bar2 +")");
 
 // Load option data (NOT USING YET)
 d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
@@ -363,10 +430,11 @@ d3.json("AllData.json", function(error, data) {
           k = i
           // Call functions that depent on activation of stock
           payoffResult()
-          stockInvest()
           payoffLegendName()
+          optionbars()
+          editSlider()
           // Edit the information on the page
-          document.getElementById("money").innerHTML = "Money left: $" +totalInvestment
+          document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
           document.getElementById("stock").innerHTML = "Investing in " +cities[k].name;
           document.getElementById("stockPrice").innerHTML = "Current price  " +thisPrice[k];
           if (strUser == "shares") {
@@ -576,99 +644,43 @@ d3.json("AllData.json", function(error, data) {
     // Data
     shares = 0
     callprice = -3
-    payoffData[k] = [[],[],[],[],[]]
+
     type1 = 0
 
-    if (k == 0 ) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Amazon.call.length)
-      strike1 = optionsJSON.Amazon.call[firstOption].strike;
-      price1 = optionsJSON.Amazon.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Amazon.put.length)
-      strike2 = optionsJSON.Amazon.put[secondOption].strike;
-      price2 = optionsJSON.Amazon.put[secondOption].price;
-    } else if (k == 1) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
-      strike1 = optionsJSON.Apple.call[firstOption].strike;
-      price1 = optionsJSON.Apple.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
-      strike2 = optionsJSON.Apple.put[secondOption].strike;
-      price2 = optionsJSON.Apple.put[secondOption].price;
-    } else if (k == 2) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Colgate.call.length)
-      strike1 = optionsJSON.Colgate.call[firstOption].strike;
-      price1 = optionsJSON.Colgate.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Colgate.put.length)
-      strike2 = optionsJSON.Colgate.put[secondOption].strike;
-      price2 = optionsJSON.Colgate.put[secondOption].price;
-    } else if (k == 3) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Costco.call.length)
-      strike1 = optionsJSON.Costco.call[firstOption].strike;
-      price1 = optionsJSON.Costco.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Costco.put.length)
-      strike2 = optionsJSON.Costco.put[secondOption].strike;
-      price2 = optionsJSON.Costco.put[secondOption].price;
-    } else if (k == 4) {
-      firstOption = Math.floor(Math.random() * optionsJSON.IBM.call.length)
-      strike1 = optionsJSON.IBM.call[firstOption].strike;
-      price1 = optionsJSON.IBM.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.IBM.put.length)
-      strike2 = optionsJSON.IBM.put[secondOption].strike;
-      price2 = optionsJSON.IBM.put[secondOption].price;
-    } else if (k == 5) {
-      firstOption = Math.floor(Math.random() * optionsJSON.MasterCard.call.length)
-      strike1 = optionsJSON.MasterCard.call[firstOption].strike;
-      price1 = optionsJSON.MasterCard.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.MasterCard.put.length)
-      strike2 = optionsJSON.MasterCard.put[secondOption].strike;
-      price2 = optionsJSON.MasterCard.put[secondOption].price;
-    } else if (k == 6) {
-      firstOption = Math.floor(Math.random() * optionsJSON.RalphLauren.call.length)
-      strike1 = optionsJSON.RalphLauren.call[firstOption].strike;
-      price1 = optionsJSON.RalphLauren.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.RalphLauren.put.length)
-      strike2 = optionsJSON.RalphLauren.put[secondOption].strike;
-      price2 = optionsJSON.RalphLauren.put[secondOption].price;
-    } else if (k == 7) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Wynn.call.length)
-      strike1 = optionsJSON.Wynn.call[firstOption].strike;
-      price1 = optionsJSON.Wynn.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Wynn.put.length)
-      strike2 = optionsJSON.Wynn.put[secondOption].strike;
-      price2 = optionsJSON.Wynn.put[secondOption].price;
-    }
+    firstOption = Math.floor(Math.random() * optionsJSON[cities[k].name].call.length)
+    strike1 = optionsJSON[cities[k].name].call[firstOption].strike;
+    price1 = optionsJSON[cities[k].name].call[firstOption].price;
+    secondOption = Math.floor(Math.random() * optionsJSON[cities[k].name].put.length)
+    strike2 = optionsJSON[cities[k].name].put[secondOption].strike;
+    price2 = optionsJSON[cities[k].name].put[secondOption].price;
 
     // PRICE IS PROFIT...
     // Line 1
-    for (i=-50; i<=50; i++){
-        payoffData[k][0].push({
-          name: "shares",
-          key: thisPrice[k] + i,
-          price: i*thisAmount[k]
-        })
-    };
+    
+    console.log(payoffData)
     // line call amazon 312 (JUST USE A MAX FUNCTION!!! (ST-K))
-    for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
-        payoffData[k][1].push({
-            name: "shares",
-            key: i,
-            price: 100*(d3.max([i-strike1,0]) - price1)
-        })
-    }
+  //   for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
+  //       payoffData[k][1].push({
+  //           name: "shares",
+  //           key: i,
+  //           price: 100*(d3.max([i-strike1,0]) - price1)
+  //       })
+  //   }
 
-    for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
-        payoffData[k][2].push({
-            name: "shares",
-            key: i,
-            price: 100*(d3.max([strike2-i,0]) - price2)
-        })
-    }
+  //   for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
+  //       payoffData[k][2].push({
+  //           name: "shares",
+  //           key: i,
+  //           price: 100*(d3.max([strike2-i,0]) - price2)
+  //       })
+  //   }
 
-  for (i = 0; i < payoffData[k][2].length; i++){
-      payoffData[k][4].push({
-          key: payoffData[k][0][i].key,
-          price: payoffData[k][0][i].price+payoffData[k][1][i].price+payoffData[k][2][i].price
-      })
-  };
+  // for (i = 0; i < payoffData[k][2].length; i++){
+  //     payoffData[k][4].push({
+  //         key: payoffData[k][0][i].key,
+  //         price: payoffData[k][0][i].price+payoffData[k][1][i].price+payoffData[k][2][i].price
+  //     })
+  // };
 
 
 
@@ -733,20 +745,20 @@ d3.json("AllData.json", function(error, data) {
     
   // Name and color stock
   payoffLegend.append("text")
-      .attr("x", width3 +margin3.left +10)
+      .attr("x", width3 +marginPayoff.left +10)
       .attr("y", 450)
       .style("fill", color(cities[k].name))
       .text(cities[k].name)
 
   // Amount of stocks
   payoffLegend.append("text")
-      .attr("x", width3 +margin3.left +10)
+      .attr("x", width3 +marginPayoff.left +10)
       .attr("y", 470)
       .text(thisAmount[k] +" stocks")
 
   // Amount of options
   payoffLegend.append("text")
-      .attr("x", width3 +margin3.left +10)
+      .attr("x", width3 +marginPayoff.left +10)
       .attr("y", 490)
       .text(thisAmount[k] +" options")
 
@@ -760,9 +772,165 @@ d3.json("AllData.json", function(error, data) {
     }
 
 // ------------------------------------------------------------------
+// Bar Chart
+// ------------------------------------------------------------------ 
+
+  function optionbars(){
+  strikesCall = [];
+  pricesCall = [];
+  strikesPut = [];
+  pricesPut = [];
+  for (i=0; i<optionsJSON[cities[k].name].call.length; i++){
+    strikesCall.push(optionsJSON[cities[k].name].call[i].strike)
+    pricesCall.push(optionsJSON[cities[k].name].call[i].price*100)
+  }
+  for (i=0; i<optionsJSON[cities[k].name].put.length; i++){
+    strikesPut.push(optionsJSON[cities[k].name].put[i].strike)
+    pricesPut.push(optionsJSON[cities[k].name].put[i].price*100)
+  }
+  prices = pricesCall.concat(pricesPut);
+  strikes = strikesCall.concat(strikesPut);
+  xbar.domain([0, d3.max(prices)]);
+  //x.domain(data.map(function(d) { return d.letter; }));
+  ybar1.domain(strikesCall);
+  ybar2.domain(strikesPut);
+
+  chart1.selectAll(".bar").remove()
+  chart2.selectAll(".bar2").remove()
+  chart1.select(".y.axis").remove()
+  chart2.select(".y.axis").remove()
+  chart1.select(".x.axis").remove()
+  chart2.select(".x.axis").remove()
+
+  chart1.selectAll(".bar")
+      .data(optionsJSON[cities[k].name].call)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("y", function(d) {return ybar1(d.strike); })
+      .attr("height", ybar1.rangeBand())
+      .attr("x", 1)
+      .attr("width", function(d) {return xbar(d.price*100); })
+      .on("mouseover", mouseoverchart)
+      .on("click", clickchartCall);
+
+  chart2.selectAll(".bar2")
+      .data(optionsJSON[cities[k].name].put)
+    .enter().append("rect")
+      .attr("class", "bar2")
+      .attr("y", function(d) {return ybar2(d.strike); })
+      .attr("height", ybar2.rangeBand())
+      .attr("x", 1)
+      .attr("width", function(d) {return xbar(d.price*100); })
+      .on("mouseover", mouseoverchart)
+      .on("click", clickchartPut);
+
+    chart1.append("g")
+      .attr("class", "y axis")
+      .call(yAxisbar1)
+    .append("text")
+      .attr("x", -30)
+      .attr("y", -15)
+      .attr("dy", ".71em")
+      .text("Strike price of Call options");
+
+  chart2.append("g")
+      .attr("class", "y axis")
+      .call(yAxisbar1)
+    .append("text")
+      .attr("x", -30)
+      .attr("y", -15)
+      .attr("dy", ".71em")
+      .text("Strike price of Put options");
+
+  chart1.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + heightbar + ")")
+      .call(xAxisbar);
+
+  chart2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + heightbar + ")")
+      .call(xAxisbar);
+
+  function mouseoverchart(d) {
+
+
+  }
+  
+  function clickchartCall() {
+   thisCall = []
+    for (i = thisPrice[k]-50; i <= thisPrice[k] +50; i++){
+        thisCall .push({
+            name: "shares",
+            key: i,
+            price: 100*(d3.max([i-strike1,0]) - price1)
+        })
+    }
+    payoffData[k].push(thisCall)
+    payoffResult()
+
+  }
+
+  function clickchartPut() {
+   console.log("Congratulations, you just bought this option!")
+
+  }
+
+  }
+
+  // PUT THE SLIDER IN, THEN CHANGE IT WHEN I CLICK THE LEGEND
+  d3.select("body").append("input")
+    .attr("id", "slider")
+    .attr("type", "range")
+    .attr("min", 0)
+    .attr("max", 20)
+    .attr("value", thisAmount[k])
+    .on("change", function() {
+          totalInvestment = 40000;
+          thisAmount[k] = this.value*5;
+          for (i = 0; i< cities.length; i++){
+              totalInvestment -= (thisPrice[i]*thisAmount[i])  
+          }        
+          document.getElementById("money").innerHTML = "Money left: $" +formatValue(totalInvestment)
+          shares = []
+          for (i=-50; i<=50; i++){
+              shares.push({
+                  name: "shares",
+                  key: thisPrice[k] + i,
+                  price: i*thisAmount[k]
+              })
+        };
+          payoffData[k].push(shares)
+          payoffResult();
+          payoffLegendName()
+          if (totalInvestment < 0) {alert("Not enough money")}
+  });
+
+// ------------------------------------------------------------------
 // END OF D3.JSON(){}
 // ------------------------------------------------------------------
 });
+
+  function editSlider(){
+    console.log(thisAmount[k])
+    d3.select("#slider").remove()
+    d3.select("body").append("input")
+    .attr("id", "slider")
+    .attr("type", "range")
+    .attr("min", 0)
+    .attr("max", 20)
+    .attr("value", thisAmount[k]/5)
+    .on("change", function() {
+          totalInvestment = 40000;
+          thisAmount[k] = this.value*5;
+          for (i = 0; i< cities.length; i++){
+              totalInvestment -= (thisPrice[i]*thisAmount[i])  
+          }        
+          document.getElementById("money").innerHTML = "Money left: $" +formatValue(totalInvestment)
+          payoffResult();
+          payoffLegendName()
+          if (totalInvestment < 0) {alert("Not enough money")}
+  });  }
 
 // ------------------------------------------------------------------
 // Brush function
@@ -817,37 +985,11 @@ d3.json("AllData.json", function(error, data) {
 // Type of investments 
 // ------------------------------------------------------------------
   
-  // Some edits in the investment box
-  function stockInvest() {
-      e = document.getElementById("investmentType");
-      strUser = e.options[e.selectedIndex].text;
-      if (strUser === "Shares") {
-          document.getElementById("otype").innerHTML = '<br><input type="text" id="amount" onkeypress="searchKeyPress(event);">'
-      } else if (strUser === "Option Strategy") {
-          document.getElementById("otype").innerHTML = '<input type="checkbox" name="option" value="call">Call <input type="checkbox" name="option" value="put">Put'
-      } else {
-          document.getElementById("otype").innerHTML = "List of all the options and you can check some"
-      }
-  }
 
 // ------------------------------------------------------------------
 // Enter key in search field
 // ------------------------------------------------------------------
 
-  // Some edits when pressing the enter key
-  function searchKeyPress(e) {
-      if (e.keyCode == 13) {   
-          totalInvestment = 100000;
-          thisAmount[k] = document.getElementById("amount").value;
-          for (i = 0; i< cities.length; i++){
-              totalInvestment -= (thisPrice[i]*thisAmount[i])  
-          }        
-          document.getElementById("money").innerHTML = "Money left: $" +totalInvestment.toFixed(2)
-          payoffResult();
-          payoffLegendName()
-          if (totalInvestment < 0) {alert("Not enough money")}
-      }
-  };
 
 // ------------------------------------------------------------------
 // Investment results
@@ -871,8 +1013,28 @@ d3.json("AllData.json", function(error, data) {
   }
 
 // ------------------------------------------------------------------
+// Tour of visualisation
+// ------------------------------------------------------------------
+  function tour() {
+    console.log("hi")
+  }
+
+// ------------------------------------------------------------------
 // END OF JAVASCRIOT
 // ------------------------------------------------------------------
 
 </script>
-<div class="container"></div>
+<div id="vistour">
+  <div id="first">
+    <p>Hello, and welcome to my visualisation<br>The first thing</p>
+  </div>
+
+  <div id="sevond"></div>
+
+  <div id="third"></div>
+
+  <div id="fourth"></div>
+
+</div>
+<div id="verticalline"></div>
+<div id="horizontalline"></div>

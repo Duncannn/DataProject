@@ -2,6 +2,14 @@
 <meta charset="utf-8">
 <style>
 
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
 div{
   display: block;
 }
@@ -65,7 +73,8 @@ body {
   width:100%;
   height:60px;
   /*background-color: #802c59;*/
-  background-color: maroon;
+  /*background-color: #1c94c6;*/
+  background-color:maroon;
   border-bottom: 2px solid #CCC;
 }
 
@@ -142,17 +151,20 @@ var k = 0,
 var margin = {top: 20, right: 100, bottom: 400, left: 130},
     margin2 = {top: 330, right: 10, bottom: 320, left: 130},
     margin3 = {top: 450, right: 100, bottom: 55, left: 50},
-    margin4 = {top: 20, right: 730, bottom: 400, left: 30};
+    margin4 = {top: 20, right: 730, bottom: 400, left: 30},
+    marginbar = {top:450, right: 10, bottom: 55, left:600};
 
 // Width and heights
 var width = 825 - margin.left - margin.right,
     width3 = 825 - margin3.left - margin3.right,
     width4 = 825 - margin4.left - margin4.right,
+    widthbar = 825 - marginbar.left - marginbar.right,
 
     height = 700 - margin.top - margin.bottom,
     height2 = 700 - margin2.top - margin2.bottom,
     height3 = 700 - margin3.top - margin3.bottom,
     height4 = 700 - margin4.top - margin4.bottom;
+    heightbar = 700 - marginbar.top - marginbar.bottom;
 
 // Date and money elements
 var parseDate = d3.time.format("%d-%m-%Y").parse,
@@ -168,13 +180,15 @@ var x = d3.time.scale().range([0, width]),
     x2 = d3.time.scale().range([0, width]),
     x3 = d3.scale.linear().range([0,width3]),
     x4 = d3.time.scale().range([0, width4]),
+    xbar = d3.scale.linear()
+    .range([width, 0]);
 
     y = d3.scale.linear().range([height, 0]),
     y2 = d3.scale.linear().range([height2, 0]),
     y3 = d3.scale.linear().range([height3, 0]),
     y4 = d3.scale.linear().range([height4, 0]),
     ybar = d3.scale.ordinal()
-             .rangeRoundBands([0, height], .2);
+              .rangeRoundBands([0, heightbar], .1);
 
 // Axes
 var xAxis = d3.svg.axis().scale(x).orient("bottom"),
@@ -182,9 +196,10 @@ var xAxis = d3.svg.axis().scale(x).orient("bottom"),
     xAxis3 = d3.svg.axis().scale(x3).orient("bottom"),
     xAxis4 = d3.svg.axis().scale(x4).orient("bottom"),
 
-    yAxis = d3.svg.axis().scale(y).orient("left");
-    yAxis3 = d3.svg.axis().scale(y3).orient("left");
+    yAxis = d3.svg.axis().scale(y).orient("left"),
+    yAxis3 = d3.svg.axis().scale(y3).orient("left"),
     yAxis4 = d3.svg.axis().scale(y4).orient("left");
+    yAxisBar = d3.svg.axis().scale(ybar).orient("left")
 
 // Horizontal and vertical brushes
 var brushx = d3.svg.brush()
@@ -216,6 +231,10 @@ var line4 = d3.svg.line()
     .x(function(d) { return x4(d.date); })
     .y(function(d) { return y4(d.price); });
 
+// SLIDER
+
+
+
 // Appending the SVG element
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -245,12 +264,17 @@ var yBrush = svg.append("g")
 // Payoff element
 var payoff = svg.append("g")
     .attr("class", "payoff")
-    .attr("transform", "translate(" + margin3.left + "," + margin3.top + ")")
+    .attr("transform", "translate(" + margin3.left + "," + margin3.top + ")");
 
 // Tooltip main graph
 var toolTip1 = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .style("display", "none");
+
+// Bar chart
+var chart = svg.append("g")
+    .attr("class", "chart")
+    .attr("transform", "translate(" +marginbar.left +"," +marginbar.top +")");
 
 // Load option data (NOT USING YET)
 d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
@@ -579,63 +603,12 @@ d3.json("AllData.json", function(error, data) {
     payoffData[k] = [[],[],[],[],[]]
     type1 = 0
 
-    if (k == 0 ) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Amazon.call.length)
-      strike1 = optionsJSON.Amazon.call[firstOption].strike;
-      price1 = optionsJSON.Amazon.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Amazon.put.length)
-      strike2 = optionsJSON.Amazon.put[secondOption].strike;
-      price2 = optionsJSON.Amazon.put[secondOption].price;
-    } else if (k == 1) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
-      strike1 = optionsJSON.Apple.call[firstOption].strike;
-      price1 = optionsJSON.Apple.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Apple.call.length)
-      strike2 = optionsJSON.Apple.put[secondOption].strike;
-      price2 = optionsJSON.Apple.put[secondOption].price;
-    } else if (k == 2) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Colgate.call.length)
-      strike1 = optionsJSON.Colgate.call[firstOption].strike;
-      price1 = optionsJSON.Colgate.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Colgate.put.length)
-      strike2 = optionsJSON.Colgate.put[secondOption].strike;
-      price2 = optionsJSON.Colgate.put[secondOption].price;
-    } else if (k == 3) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Costco.call.length)
-      strike1 = optionsJSON.Costco.call[firstOption].strike;
-      price1 = optionsJSON.Costco.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Costco.put.length)
-      strike2 = optionsJSON.Costco.put[secondOption].strike;
-      price2 = optionsJSON.Costco.put[secondOption].price;
-    } else if (k == 4) {
-      firstOption = Math.floor(Math.random() * optionsJSON.IBM.call.length)
-      strike1 = optionsJSON.IBM.call[firstOption].strike;
-      price1 = optionsJSON.IBM.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.IBM.put.length)
-      strike2 = optionsJSON.IBM.put[secondOption].strike;
-      price2 = optionsJSON.IBM.put[secondOption].price;
-    } else if (k == 5) {
-      firstOption = Math.floor(Math.random() * optionsJSON.MasterCard.call.length)
-      strike1 = optionsJSON.MasterCard.call[firstOption].strike;
-      price1 = optionsJSON.MasterCard.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.MasterCard.put.length)
-      strike2 = optionsJSON.MasterCard.put[secondOption].strike;
-      price2 = optionsJSON.MasterCard.put[secondOption].price;
-    } else if (k == 6) {
-      firstOption = Math.floor(Math.random() * optionsJSON.RalphLauren.call.length)
-      strike1 = optionsJSON.RalphLauren.call[firstOption].strike;
-      price1 = optionsJSON.RalphLauren.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.RalphLauren.put.length)
-      strike2 = optionsJSON.RalphLauren.put[secondOption].strike;
-      price2 = optionsJSON.RalphLauren.put[secondOption].price;
-    } else if (k == 7) {
-      firstOption = Math.floor(Math.random() * optionsJSON.Wynn.call.length)
-      strike1 = optionsJSON.Wynn.call[firstOption].strike;
-      price1 = optionsJSON.Wynn.call[firstOption].price;
-      secondOption = Math.floor(Math.random() * optionsJSON.Wynn.put.length)
-      strike2 = optionsJSON.Wynn.put[secondOption].strike;
-      price2 = optionsJSON.Wynn.put[secondOption].price;
-    }
+    firstOption = Math.floor(Math.random() * optionsJSON[cities[k].name].call.length)
+    strike1 = optionsJSON[cities[k].name].call[firstOption].strike;
+    price1 = optionsJSON[cities[k].name].call[firstOption].price;
+    secondOption = Math.floor(Math.random() * optionsJSON[cities[k].name].put.length)
+    strike2 = optionsJSON[cities[k].name].put[secondOption].strike;
+    price2 = optionsJSON[cities[k].name].put[secondOption].price;
 
     // PRICE IS PROFIT...
     // Line 1
@@ -758,6 +731,38 @@ d3.json("AllData.json", function(error, data) {
       payoffLegend.select("text:nth-child(2)")
                   .text(thisAmount[k] +" stocks")
     }
+
+// ------------------------------------------------------------------
+// Bar Chart
+// ------------------------------------------------------------------ 
+  // if call: highest: strike last, price first
+  // if put : highest: strike last, price last
+
+  console.log(optionsJSON[cities[0].name].call)
+  xbar.domain([optionsJSON[cities[0].name].call[0].strike,
+              optionsJSON[cities[0].name].call[optionsJSON[cities[0].name].call.length-1].strike]);
+  ybar.domain([optionsJSON[cities[0].name].call[optionsJSON[cities[0].name].call.length-1].price,
+              optionsJSON[cities[0].name].call[0].price])
+
+  // chart.selectAll(".bar")
+  //      .data(optionsJSON[cities[0].name].call)
+  //   .enter().append("rect")
+  //      .attr("class", "bar")
+  //      .attr("x", function(d) { console.log(xbar(d.strike)); return xbar(d.strike); })
+  //      .attr("width", 10)
+  //      .attr("height", function(d) { return height - ybar(d.price); });
+
+  var barWidth = widthbar / optionsJSON[cities[0].name].call.length;
+
+    var bar = chart.selectAll("g")
+      .data(optionsJSON[cities[0].name].call)
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(" + i * barWidth + ",0)"; });
+
+  bar.append("rect")
+      .attr("y", function(d) { return ybar(d.price); })
+      .attr("height", function(d) { return height - ybar(d.price); })
+      .attr("width", barWidth - 1);
 
 // ------------------------------------------------------------------
 // END OF D3.JSON(){}
