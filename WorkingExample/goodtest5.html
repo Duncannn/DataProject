@@ -188,7 +188,7 @@ var margin = {top: 20, right: 525, bottom: 400, left: 130},
     marginxBrush = {top: 330, right: 525, bottom: 320, left: 130},
     marginPayoff = {top: 450, right: 525, bottom: 55, left: 50},
     marginyBrush = {top: 20, right: 1185, bottom: 400, left: 30},
-    marginbar = {top:400, right: 20, bottom: 80, left:950};
+    marginbar = {top:380, right: 20, bottom: 120, left:950};
 
 // Width and heights
 //margins right + 135
@@ -310,6 +310,10 @@ var payoff = svg.append("g")
 var toolTip1 = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .style("display", "none");
+
+var chart = svg.append("g")
+    .attr("class", "chart")
+    .attr("transform", "translate(" + marginbar.left +"," +marginbar.top +")");
 
 // Bar chart
 var chart1 = svg.append("g")
