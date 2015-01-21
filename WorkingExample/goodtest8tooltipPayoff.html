@@ -267,7 +267,7 @@ var k = 0,
     price2
     allData = [{},{},{},{},{},{},{},{}],
     optionInfo = 0;
- 
+
 // Margins   
 var margin = {top: 20, right: 525, bottom: 400, left: 130},
     marginxBrush = {top: 330, right: 525, bottom: 320, left: 130},
@@ -291,6 +291,7 @@ var width = 1280 - margin.left - margin.right,
 // Date and money elements
 var parseDate = d3.time.format("%d-%m-%Y").parse,
     bisectDate = d3.bisector(function(d) { return d.date; }).left,
+    bisectNum = d3.bisector(function(d) {return d.price;}).left,
     formatValue = d3.format(",.2f"),
     formatCurrency = function(d) { return "$" + formatValue(d); };
 
@@ -412,6 +413,8 @@ bar2 = +marginbar.top +heightbar+40
 var chart2 = svg.append("g")
     .attr("class", "chart2")
     .attr("transform", "translate(" + marginbar.left +"," +bar2 +")");
+
+document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
 
 // Load option data (NOT USING YET)
 d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
@@ -645,7 +648,7 @@ d3.json("AllData.json", function(error, data) {
       .attr("width", width4)
 
 // ------------------------------------------------------------------
-// Tooltip Thing
+// Tooltip Main Graph
 // ------------------------------------------------------------------
 
   // Add a circle for the tooltip
@@ -693,6 +696,70 @@ d3.json("AllData.json", function(error, data) {
               "translate(" + x(d.date) + "," +
                              y(d.price) + ")")
         .text(formatCurrency(d.price));   
+    }
+
+// ------------------------------------------------------------------
+// Tooltip Payoff Graph
+// ------------------------------------------------------------------
+
+  toolTip2.append("circle")                                 
+      .attr("class", "y")                                
+      .style("fill", "none")                             
+      .style("stroke", "black")                           
+      .attr("r", 4);
+
+  // Add the text for the tooltip
+  toolTip2.append("text")
+      .attr("class", "y2")
+      .attr("dx", -2)
+      .attr("dy", -30)
+      .style("font-size", "15px");
+
+  toolTip2.append("text")
+      .attr("class", "y3")
+      .attr("dx", -2)
+      .attr("dy", -10)
+      .style("font-size", "15px");
+
+  // Rectangle for when the tooltip shows if the mouse is on it
+  payoff.append("rect")                                     
+      .attr("width", width3)                              
+      .attr("height", height3)                            
+      .style("fill", "none")                             
+      .style("pointer-events", "all")                    
+      .on("mouseover", function() { toolTip2.style("display", null); })
+      .on("mouseout", function() { toolTip2.style("display", "none"); })
+      .on("mousemove", mousemovepayoff); 
+
+  // Function for when the mouse moves on the rectangle
+  function mousemovepayoff() {
+    // Get the date, its index, values left and right of the date and the intrapolation
+    var mouseNum = x3.invert(d3.mouse(this)[0]);
+    i2 = Math.round(mouseNum+40-thisPrice[k])
+    //console.log(payoffData[k][payoffData[k].length-1][i2].price)
+    if (payoffData[k].length !== 0) {
+        if (payoffData[k].length === 1) {
+          d = payoffData[k][payoffData[k].length-1][i2]}
+        else { d = profit[i2]}
+        toolTip2.select("circle.y")                           
+            .attr("transform",                             
+                  "translate(" + x3(d.key) + "," +         
+                                 y3(d.price) + ")");
+
+            +"\n" +"strke:"+formatCurrency(d.key)
+        // Place the price above of the circle
+        toolTip2.select("text.y2")
+            .attr("transform",
+                  "translate(" + x3(d.key) + "," +
+                                 y3(d.price) + ")")
+            .text("Profit: "+formatCurrency(d.price)); 
+
+        toolTip2.select("text.y3")
+            .attr("transform",
+                  "translate(" + x3(d.key) + "," +
+                                 y3(d.price) + ")")
+            .text("Price: "+formatCurrency(Math.round(d.key)));
+      } else {toolTip2.style("display", "none");}
     }
 
 // ------------------------------------------------------------------
@@ -1154,10 +1221,10 @@ d3.json("AllData.json", function(error, data) {
       // for each element in the stock
         for (j = 0; j < Object.keys(allData[i]).length; j++) {
             if (Object.keys(allData[i])[j] == "shares") {
-              totalInvestment -= allData[k][Object.keys(allData[i])[j]]*thisPrice[i]
+              totalInvestment -= allData[i][Object.keys(allData[i])[j]]*thisPrice[i]
             } else {
-              totalInvestment -=allData[k][Object.keys(allData[i])[j]][0]*
-                                allData[k][Object.keys(allData[i])[j]][1]
+              totalInvestment -=allData[i][Object.keys(allData[i])[j]][0]*
+                                allData[i][Object.keys(allData[i])[j]][1]
             }
         }
     }
@@ -1210,8 +1277,6 @@ d3.json("AllData.json", function(error, data) {
     document.getElementById("first").style.visibility = "visible"
 
   }
-
-document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
 
 // ------------------------------------------------------------------
 // END OF JAVASCRIOT
