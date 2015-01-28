@@ -11,7 +11,6 @@
 .nextBut:hover{
   opacity: 1;
 }
-
 .exitBut {
   opacity: 0.8;
   float:right;
@@ -53,7 +52,7 @@
 }
 
 .box {
-  width:300px;
+  width:400px;
   background-color: #eee;
   border: 2px solid #333;
   border-radius: 5px;
@@ -145,6 +144,13 @@
     border-bottom-color: inherit; /* Can't be included in the shorthand to work */
     top: -23px;
     margin-left: -23px;
+}
+
+#terms {
+  visibility: hidden;
+  position:absolute;
+  left:200px;
+  top:80px;
 }
 
 #about_1 {
@@ -269,6 +275,42 @@
   top:255px;
   visibility:hidden;
 }
+#info_1 {
+  position: absolute;
+  left:900px;
+  top:30px;
+  visibility:hidden;
+}
+#info_2 {
+  position: absolute;
+  left:900px;
+  top:10px;
+  visibility:hidden;
+}
+#info_3{
+  position: absolute;
+  left:900px;
+  top:90px;
+  visibility:hidden;
+}
+#info_4 {
+  position: absolute;
+  left:900px;
+  top:45px;
+  visibility:hidden;
+}
+#info_5 {
+  position: absolute;
+  left:900px;
+  top:127px;
+  visibility:hidden;
+}
+#info_6 {
+  position: absolute;
+  left:900px;
+  top:145px;
+  visibility:hidden;
+}
 .bar {
   fill: steelblue;
 }
@@ -350,6 +392,14 @@ body {
   left: 925px;
 }
 
+#shareSlider {
+  visibility:visible;
+  position: absolute;
+  top: 262px;
+  left: 1070px;
+}
+
+
 #strats {
   visibility:hidden;
   position: absolute;
@@ -395,9 +445,11 @@ body {
       <div id="name">
         <ul id="nav">
           <li>Visualising Investment Returns</li>
-          <li> <a class="button"/>Visualise</a></li>
           <li> <a onclick="about()" class="button"/>About</a></li>
           <li> <a onclick="tour()" class="button"/>Tour</a></li>
+          <li> <a onclick="info()" class="button"/>Option Info</a></li>
+          <li> <a onclick="document.getElementById('terms').style.visibility = 'visible'"
+                  class="button"/>Terms</a></li>
         </ul>
       </div>
     </div>
@@ -406,7 +458,7 @@ body {
       <h1 id="stock">No stock selected</h1>
       <h2 id="money"></h2>
       <h3 id="stockPrice"></h3>
-      <button onclick="results()">Invest!</button>
+      <button onclick="results()">Invest!</button> <span> <button onclick="GBMresults()">Invest GBM</button> </span>
   </div>
   <form id="optCounterPut">
     <input id = "numPut" type="number" name="quantity" min="-15" max="15" value="0" onchange="optGraphPut()">
@@ -418,10 +470,12 @@ body {
     <span id="optTypeCall">Buy call option</span>
   </form>
 
+
 <script>
 // VARY THE AMOUNT OF STRATS I CAN BUY
 // edit lastPrice into results()
 // lastprice only with invested stuff. if payoffdata[k].length !== 0
+// EDIT IS NOTHING IS CLICKED, EVERYTHING STAYS....
 
 // First one
 var optionsJSON;
@@ -429,6 +483,7 @@ var optionsJSON;
 // Some global variables I'm using
 var k = 0,
     emptyTour = true,
+    GBM = false,
     investButton = false,
     activeStock = [0, 0, 0, 0, 0, 0, 0, 0],
     dateToMaturity = 20,
@@ -441,9 +496,10 @@ var k = 0,
     thisPrice = [],
     lastPrice = [],
     cities = 0,
-    numtour,
-    numAbout,
-    totalInvestment = 40000,
+    numtour = 0,
+    numAbout = 0,
+    numInfo = 0,
+    totalInvestment = 10000,
     strUser = "",
     strike1,
     price1,
@@ -483,6 +539,8 @@ var parseDate = d3.time.format("%d-%m-%Y").parse,
 
 // Colors
 var color = d3.scale.category10();
+
+var eps = d3.random.normal();
 
 // Scaling
 var x = d3.time.scale().range([0, width]),
@@ -626,12 +684,12 @@ d3.json("finalData.json", function(error, data) {
 
   // Assign the cities a color and map the values 
   cities = color.domain().map(function(name) {
-      return {
-          name: name,
-          values: data.map(function(d) {
-              return {date: d.date, price: +d[name]};
-          })
-      };
+    return {
+      name: name,
+      values: data.map(function(d) {
+          return {date: d.date, price: +d[name]};
+      })
+    };
   });
 
   // Last known price for all stocks in one array
@@ -710,85 +768,84 @@ d3.json("finalData.json", function(error, data) {
     .style("fill", function(d) {return color(d.name)})
     .text(function(d) { return d.name;})
     .on("click", function(d, i){
+      // Set variable to active or inactive and denote the current stock index
+      var active  = d.active ? false : true;
+      d.active = active
+      k = i
+      if (active == true) {
+        activeStock[k] = 1
+      } else {activeStock[k] = 0}
+      // Call functions that depent on activation of stock
+      payoffResult()
+      payoffLegendName()
+      optionbars()
+      editSlider()
+      unCheckBoxes()
+      if (checked_boxes[k] !== -1) {checkBoxes()}
 
-          // Set variable to active or inactive and denote the current stock index
-          var active  = d.active ? false : true;
-          d.active = active
-          k = i
-          if (active == true) {
-            activeStock[k] = 1
-          } else {activeStock[k] = 0}
-          // Call functions that depent on activation of stock
-          payoffResult()
-          payoffLegendName()
-          optionbars()
-          editSlider()
-          unCheckBoxes()
-          if (checked_boxes[k] !== -1) {checkBoxes()}
+      if (numtour == 3) {
+        tour2()
+      }
+      // uncheck all boxes
 
-          if (numtour == 3) {
-            tour2()
-          }
-          // uncheck all boxes
+      document.getElementById("strats").style.visibility = "visible"
+      // Edit the information on thfe page
+      document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
+      document.getElementById("stock").innerHTML = "Investing in " +cities[k].name;
+      document.getElementById("stockPrice").innerHTML = "Current price  " +thisPrice[k];
+      if (strUser == "shares") {
+        document.getElementById("amount").value = thisAmount[k]
+      }
+      // When active
+      if (active == true) {
+        d3.select("#navbar")
+          .transition().duration(1000)
+          .style("background-color",color(d.name))
+        // Values for the line, and change the line
+        onOpacity = 5;
+        offOpacity = 2;
+        legend.select("#"+d.name)
+              .transition().duration(1000)
+              .style("font-size","15px")
+              .style("font-weight","bold")
+        d3.select("#"+d.name.replace(/\s+/g, ''))
+            .transition().duration(1000) 
+            .style("stroke-width", onOpacity)
+            .style("opacity", 1);
+        // Put all stocks except this one to false
+        for (j = 0; j < cities.length; j++) {
+          if (j != i) {
+            d3.select("#"+cities[j].name)
+              .transition().duration(1000) 
+              .style("stroke-width", offOpacity)
+              .style("opacity", 0.5);
 
-          document.getElementById("strats").style.visibility = "visible"
-          // Edit the information on thfe page
-          document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
-          document.getElementById("stock").innerHTML = "Investing in " +cities[k].name;
-          document.getElementById("stockPrice").innerHTML = "Current price  " +thisPrice[k];
-          if (strUser == "shares") {
-              document.getElementById("amount").value = thisAmount[k]
-          }
-          // When active
-          if (active == true) {
-              d3.select("#navbar")
+            legend.select("#"+cities[j].name)
+              .transition().duration(1000)
+              .style("font-size","10px")
+              .style("font-weight","normal")
+              cities[j].active = false;
+              activeStock[j] = 0
+          };
+        };
+        // Change all the lines and to normal if none are active
+      } else {
+        d3.select("#navbar")
+          .transition().duration(1000)
+          .style("background-color","maroon")
+
+        for (j = 0; j < cities.length; j++) {
+          d3.select("#"+cities[j].name)
+            .transition().duration(1000) 
+            .style("stroke-width", 2)
+            .style("opacity", 1);
+
+          legend.select("#"+cities[j].name)
                 .transition().duration(1000)
-                .style("background-color",color(d.name))
-              // Values for the line, and change the line
-              onOpacity = 5;
-              offOpacity = 2;
-              legend.select("#"+d.name)
-                    .transition().duration(1000)
-                    .style("font-size","15px")
-                    .style("font-weight","bold")
-              d3.select("#"+d.name.replace(/\s+/g, ''))
-                  .transition().duration(1000) 
-                  .style("stroke-width", onOpacity)
-                  .style("opacity", 1);
-              // Put all stocks except this one to false
-              for (j = 0; j < cities.length; j++) {
-                  if (j != i) {
-                      d3.select("#"+cities[j].name)
-                        .transition().duration(1000) 
-                        .style("stroke-width", offOpacity)
-                        .style("opacity", 0.5);
-
-                      legend.select("#"+cities[j].name)
-                        .transition().duration(1000)
-                        .style("font-size","10px")
-                        .style("font-weight","normal")
-                        cities[j].active = false;
-                        activeStock[j] = 0
-                  };
-              };
-            // Change all the lines and to normal if none are active
-          } else {
-              d3.select("#navbar")
-                .transition().duration(1000)
-                .style("background-color","maroon")
-
-              for (j = 0; j < cities.length; j++) {
-                  d3.select("#"+cities[j].name)
-                    .transition().duration(1000) 
-                    .style("stroke-width", 2)
-                    .style("opacity", 1);
-
-                  legend.select("#"+cities[j].name)
-                        .transition().duration(1000)
-                        .style("font-size","10px")
-                        .style("font-weight","normal")
-              }
-          }
+                .style("font-size","10px")
+                .style("font-weight","normal")
+        }
+      }
     });
 // ------------------------------------------------------------------
 // Brush X Section
@@ -938,31 +995,30 @@ d3.json("finalData.json", function(error, data) {
     // Get the date, its index, values left and right of the date and the intrapolation
     var mouseNum = x3.invert(d3.mouse(this)[0]);
     i2 = Math.round(mouseNum+30-thisPrice[k])
-    //console.log(payoffData[k][payoffData[k].length-1][i2].price)
     if (payoffData[k].length !== 0) {
-        if (payoffData[k].length === 1) {
-          d = payoffData[k][payoffData[k].length-1][i2]}
-        else { d = profit[i2]}
-        toolTip2.select("circle.y")                           
-            .attr("transform",                             
-                  "translate(" + x3(d.key) + "," +         
-                                 y3(d.price) + ")");
+      if (payoffData[k].length === 1) {
+        d = payoffData[k][payoffData[k].length-1][i2]}
+      else { d = profit[i2]}
+      toolTip2.select("circle.y")                           
+          .attr("transform",                             
+                "translate(" + x3(d.key) + "," +         
+                               y3(d.price) + ")");
 
-            +"\n" +"strke:"+formatCurrency(d.key)
-        // Place the price above of the circle
-        toolTip2.select("text.y2")
-            .attr("transform",
-                  "translate(" + x3(d.key) + "," +
-                                 y3(d.price) + ")")
-            .text("Profit: "+formatCurrency(d.price)); 
+          +"\n" +"strke:"+formatCurrency(d.key)
+      // Place the price above of the circle
+      toolTip2.select("text.y2")
+          .attr("transform",
+                "translate(" + x3(d.key) + "," +
+                               y3(d.price) + ")")
+          .text("Profit: "+formatCurrency(d.price)); 
 
-        toolTip2.select("text.y3")
-            .attr("transform",
-                  "translate(" + x3(d.key) + "," +
-                                 y3(d.price) + ")")
-            .text("Price: "+formatCurrency(Math.round(d.key)));
-      } else {toolTip2.style("display", "none");}
-    }
+      toolTip2.select("text.y3")
+          .attr("transform",
+                "translate(" + x3(d.key) + "," +
+                               y3(d.price) + ")")
+          .text("Price: "+formatCurrency(Math.round(d.key)));
+    } else {toolTip2.style("display", "none");}
+  }
 
 // ------------------------------------------------------------------
 // Payoff graph
@@ -1009,159 +1065,156 @@ d3.json("finalData.json", function(error, data) {
         delete allData[k][Object.keys(allData[k])[m]];
       }
     }
-    console.log(allData[k])
     // Create lines if there are line elements
     if (optionAmount !== 0) {
-        // Compute all the line information
-        for (i = 0; i < Object.keys(allData[k]).length; i++ ){
-            lineInfo =[]
-            for (j = thisPrice[k]-30; j <= thisPrice[k] +30; j++){
-                // if it does contain c then its a call
-                if (Object.keys(allData[k])[i].indexOf("c") !== -1 ){
-                    // replace the c
-                    thisStrike = Object.keys(allData[k])[i].replace("c","")
-                    lineInfo.push({
-                        key: j,
-                        price: allData[k][Object.keys(allData[k])[i]][0]
-                                *(100 * d3.max([j - thisStrike,0]) 
-                                - allData[k][Object.keys(allData[k])[i]][1])
-                    })
-                // if it does contain p then its a put
-                } else if (Object.keys(allData[k])[i].indexOf("p") !== -1) {
-                    thisStrike = Object.keys(allData[k])[i].replace("p","")
-                    lineInfo.push({
-                        key: j,
-                        price: allData[k][Object.keys(allData[k])[i]][0]
-                                *(100 * d3.max([thisStrike - j,0]) 
-                                - allData[k][Object.keys(allData[k])[i]][1])
-                    })
-                // otherwise they are shares
-                } else {
-                    lineInfo.push({
-                        key: j,
-                        price: (j-thisPrice[k]) * allData[k][Object.keys(allData[k])[i]][0]
-                    })
-                       
-                }
-            }
-            payoffData[k].push(lineInfo)
-        }
-
-        // No profit line if there is only 1 line
-        profit = []
-        for (j = 0; j < 61; j++) {
-            profitKey = 0
-            for (i = 0; i < payoffData[k].length; i++) {
-                profitKey += payoffData[k][i][j].price
-            }
-            profit.push({
-              key: payoffData[k][0][j].key,
-              price: profitKey
+      // Compute all the line information
+      for (i = 0; i < Object.keys(allData[k]).length; i++ ){
+        lineInfo =[]
+        for (j = thisPrice[k]-30; j <= thisPrice[k] +30; j++){
+          // if it does contain c then its a call
+          if (Object.keys(allData[k])[i].indexOf("c") !== -1 ){
+            // replace the c
+            thisStrike = Object.keys(allData[k])[i].replace("c","")
+            lineInfo.push({
+              key: j,
+              price: allData[k][Object.keys(allData[k])[i]][0]
+                      *(100 * d3.max([j - thisStrike,0]) 
+                      - allData[k][Object.keys(allData[k])[i]][1])
             })
+          // if it does contain p then its a put
+          } else if (Object.keys(allData[k])[i].indexOf("p") !== -1) {
+            thisStrike = Object.keys(allData[k])[i].replace("p","")
+            lineInfo.push({
+              key: j,
+              price: allData[k][Object.keys(allData[k])[i]][0]
+                      *(100 * d3.max([thisStrike - j,0]) 
+                      - allData[k][Object.keys(allData[k])[i]][1])
+            })
+          // otherwise they are shares
+          } else {
+            lineInfo.push({
+              key: j,
+              price: (j-thisPrice[k]) * allData[k][Object.keys(allData[k])[i]][0]
+            })             
+          }
         }
-        if (payoffData[k].length >=2) {payoffData[k].push(profit)}
-      // Find the highest and lowest values
-        yMax = 0;
-        yMin = 0;
-        dom = [];
-        // Done by looping over all the elements and finding the highest and lowest
-        for (i = 0; i<payoffData[k].length; i++) {
-            for (j = 0; j < payoffData[k][i].length; j++) {
-                if (payoffData[k][i][j].price < yMin) {yMin = payoffData[k][i][j].price}
-                else if (payoffData[k][i][j].price > yMax) {yMax=payoffData[k][i][j].price}
-            } 
-        };
-        dom = [yMin, yMax]
+        payoffData[k].push(lineInfo)
+      }
 
-        // Set the domains
-        x3.domain(d3.extent(payoffData[k][0], function(d) { return d.key; }));
-        y3.domain(dom);
-
-        // Set the intersection point to 1/2 of the graph if there are no lines
-        if (payoffData[k].length == 0){
-            intersection = 0.5
-        } else{
-            intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]));
+      // No profit line if there is only 1 line
+      profit = []
+      for (j = 0; j < 61; j++) {
+        profitKey = 0
+        for (i = 0; i < payoffData[k].length; i++) {
+          profitKey += payoffData[k][i][j].price
+        }
+        profit.push({
+          key: payoffData[k][0][j].key,
+          price: profitKey
+        })
+      }
+      if (payoffData[k].length >=2) {payoffData[k].push(profit)}
+    // Find the highest and lowest values
+      yMax = 0;
+      yMin = 0;
+      dom = [];
+      // Done by looping over all the elements and finding the highest and lowest
+      for (i = 0; i<payoffData[k].length; i++) {
+        for (j = 0; j < payoffData[k][i].length; j++) {
+          if (payoffData[k][i][j].price < yMin) {yMin = payoffData[k][i][j].price}
+          else if (payoffData[k][i][j].price > yMax) {yMax=payoffData[k][i][j].price}
         } 
+      };
+      dom = [yMin, yMax]
 
-        // Plot a max of 5 graphs
-        if (payoffData[k].length > 5) {
-            len = payoffData[k].length
-            dataPlot = payoffData[k].slice(len-4, len)
-        } else {
-            dataPlot = payoffData[k]
-        }
+      // Set the domains
+      x3.domain(d3.extent(payoffData[k][0], function(d) { return d.key; }));
+      y3.domain(dom);
 
-        // Plot all the lines
-        var city3 = payoff.selectAll(".city3")
-            .data(dataPlot)
-          .enter().append("g")
-            .attr("class", "city3");
+      // Set the intersection point to 1/2 of the graph if there are no lines
+      if (payoffData[k].length == 0){
+        intersection = 0.5
+      } else{
+        intersection =  Math.abs(dom[1])/(Math.abs(dom[1])+Math.abs(dom[0]));
+      } 
 
-        city3.append("path")
-            .attr("id", function(d,i) {return cities[k].name;})
-            .attr("d", function(d) { return line3(d); })
-            .style("stroke", function(d,i) {
-                if (i == dataPlot.length-1) {
-                    return color(cities[k].name);
-                } else {return "maroon";}    
-            })
-            .style("stroke-width", function(d,i) {
-                if (i == dataPlot.length-1) {
-                    return 3
-                } else {return 1;}
-            })
-            .style("opacity", 0)
-            .transition().duration(1500)
-            .style("opacity", 1)
-            .style("fill", "none")
-            .style("stroke-dasharray", function(d,i){
-                if (i == dataPlot.length-1) {
-                    return 0,0;}
-                else {return 5,5}
-            })
-      
-      // Transition the x and y axis
-        payoff.select(".x.axis").transition().duration(1000)
-              .call(xAxis3)
-              .attr("transform", "translate(0," + height3*intersection+ ")");
-        payoff.select(".y.axis").transition().duration(1000).call(yAxis3);
-
-      // Remove the profit line, gets recalculated anyway MAY GO AWAY
+      // Plot a max of 5 graphs
+      if (payoffData[k].length > 5) {
+        len = payoffData[k].length
+        dataPlot = payoffData[k].slice(len-4, len)
       } else {
-        x3.domain([thisPrice[k]-30,thisPrice[k]+30]);
-        y3.domain([0,0]);
-        payoff.select(".x.axis").transition().duration(1000)
-              .call(xAxis3)
-              .attr("transform", "translate(0," + height3*0.5+ ")");
-        payoff.select(".y.axis").transition().duration(1000).call(yAxis3);}
+        dataPlot = payoffData[k]
+      }
+
+      // Plot all the lines
+      var city3 = payoff.selectAll(".city3")
+          .data(dataPlot)
+        .enter().append("g")
+          .attr("class", "city3");
+
+      city3.append("path")
+          .attr("id", function(d,i) {return cities[k].name;})
+          .attr("d", function(d) { return line3(d); })
+          .style("stroke", function(d,i) {
+              if (i == dataPlot.length-1) {
+                  return color(cities[k].name);
+              } else {return "maroon";}    
+          })
+          .style("stroke-width", function(d,i) {
+              if (i == dataPlot.length-1) {
+                  return 3
+              } else {return 1;}
+          })
+          .style("opacity", 0)
+          .transition().duration(1500)
+          .style("opacity", 1)
+          .style("fill", "none")
+          .style("stroke-dasharray", function(d,i){
+              if (i == dataPlot.length-1) {
+                  return 0,0;}
+              else {return 5,5}
+          })
+    
+    // Transition the x and y axis
+      payoff.select(".x.axis").transition().duration(1000)
+            .call(xAxis3)
+            .attr("transform", "translate(0," + height3*intersection+ ")");
+      payoff.select(".y.axis").transition().duration(1000).call(yAxis3);
+
+    // Remove the profit line, gets recalculated anyway MAY GO AWAY
+    } else {
+      x3.domain([thisPrice[k]-30,thisPrice[k]+30]);
+      y3.domain([0,0]);
+      payoff.select(".x.axis").transition().duration(1000)
+            .call(xAxis3)
+            .attr("transform", "translate(0," + height3*0.5+ ")");
+      payoff.select(".y.axis").transition().duration(1000).call(yAxis3);}
 
     payoff.select("#resultsLine").remove()
+    payoff.select("#resultsText").remove()
     if (investButton === true) {
-      // var payoffResultLine = payoff.selectAll(".payoffLine")
-      //       .data(lastPrice)
-      //       .enter().append("g")
-      //       .attr("class", "city3");
-
-      // payoffResultLine.append("line")
-      //       .attr("x1", function(d) {return d})
-      //       .attr("y1", 0)
-      //       .attr("x2", function(d) {return d})
-      //       .attr("y2", height3)
-      //       .attr("stroke-width", 2)
-      //       .attr("stroke", "black");
-
+      if (GBM === true) {
+        linePrice = GBMPrice
+      } else {
+        linePrice = lastPrice
+      }
       payoff.append("line")
             .attr("id", "resultsLine")
-            .attr("x1", x3(lastPrice[k]))
+            .attr("x1", x3(linePrice[k]))
             .attr("y1", 0)
-            .attr("x2", x3(lastPrice[k]))
+            .attr("x2", x3(linePrice[k]))
             .attr("y2", height3)
             .attr("stroke-width", 2)
-            .attr("stroke", "black")
+            .attr("stroke", "maroon")
             .attr("opacity" , 0)
             .transition().duration(1000)
             .attr("opacity" , 1);
+      payoff.append("text")
+            .attr("id", "resultsText")
+            .attr("y", -10)
+            .attr("x", x3(linePrice[k])-35)
+            .attr("font-weight", "bold")
+            .text("Price at 23rd Jan");
     }
 
   }
@@ -1195,142 +1248,142 @@ d3.json("finalData.json", function(error, data) {
 
   // Dynamically change the color and amounts
   window.payoffLegendName = function() {
-      payoffLegend.select("text:nth-child(1)")
-                  .style("fill", color(cities[k].name))
-                  .text(cities[k].name)
+    payoffLegend.select("text:nth-child(1)")
+                .style("fill", color(cities[k].name))
+                .text(cities[k].name)
 
-      if (allData[k]["shares"] === undefined) {
-          shareAmount = 0
-      } else{
-          shareAmount = allData[k]["shares"][0]
-      }
-      payoffLegend.select("text:nth-child(2)")
-                  .text(shareAmount +" stocks")
-      num = 0
-      for (i = 0;i < Object.keys(allData[k]).length; i++){
-          if (Object.keys(allData[k])[i] != "shares"){
-              num += Math.abs(allData[k][Object.keys(allData[k])[i]][0])
-          }
-      }
-      num = parseInt(num)
-      if (num == 1) {
-          payoffLegend.select("text:nth-child(3)")
-                  .text(num +" option")
-      } else {
-          payoffLegend.select("text:nth-child(3)")
-                  .text(num +" options")
+    if (allData[k]["shares"] === undefined) {
+      shareAmount = 0
+    } else{
+      shareAmount = allData[k]["shares"][0]
+    }
+    payoffLegend.select("text:nth-child(2)")
+                .text(shareAmount +" stocks")
+    num = 0
+    for (i = 0;i < Object.keys(allData[k]).length; i++){
+      if (Object.keys(allData[k])[i] != "shares"){
+        num += Math.abs(allData[k][Object.keys(allData[k])[i]][0])
       }
     }
+    num = parseInt(num)
+    if (num == 1) {
+      payoffLegend.select("text:nth-child(3)")
+                  .text(num +" option")
+    } else {
+      payoffLegend.select("text:nth-child(3)")
+                  .text(num +" options")
+    }
+  }
 
 // ------------------------------------------------------------------
 // Bar Chart
 // ------------------------------------------------------------------ 
 
   window.optionbars = function(){
-      // Every stock has a different amount of put/call options, so
-      // we have to recalculate both the domains again.
-      document.getElementById("optCounterPut").style.visibility = "hidden"
-      document.getElementById("optCounterCall").style.visibility = "hidden"
+    // Every stock has a different amount of put/call options, so
+    // we have to recalculate both the domains again.
+    document.getElementById("optCounterPut").style.visibility = "hidden"
+    document.getElementById("optCounterCall").style.visibility = "hidden"
 
-      // Initialise variables
-      strikesCall = [];
-      pricesCall = [];
-      strikesPut = [];
-      pricesPut = [];
-      // Append all the prices and strikes for the calls and the puts
-      for (i=0; i<optionsJSON[cities[k].name].call.length; i++){
-        strikesCall.push(optionsJSON[cities[k].name].call[i].strike)
-        pricesCall.push(optionsJSON[cities[k].name].call[i].price*100)
-      }
-      for (i=0; i<optionsJSON[cities[k].name].put.length; i++){
-        strikesPut.push(optionsJSON[cities[k].name].put[i].strike)
-        pricesPut.push(optionsJSON[cities[k].name].put[i].price*100)
-      }
-      // Join the put and call prices in one array
-      prices = pricesCall.concat(pricesPut);
-      strikes = strikesCall.concat(strikesPut);
+    // Initialise variables
+    strikesCall = [];
+    pricesCall = [];
+    strikesPut = [];
+    pricesPut = [];
+    // Append all the prices and strikes for the calls and the puts
+    for (i=0; i<optionsJSON[cities[k].name].call.length; i++){
+      strikesCall.push(optionsJSON[cities[k].name].call[i].strike)
+      pricesCall.push(optionsJSON[cities[k].name].call[i].price*100)
+    }
+    for (i=0; i<optionsJSON[cities[k].name].put.length; i++){
+      strikesPut.push(optionsJSON[cities[k].name].put[i].strike)
+      pricesPut.push(optionsJSON[cities[k].name].put[i].price*100)
+    }
+    // Join the put and call prices in one array
+    prices = pricesCall.concat(pricesPut);
+    strikes = strikesCall.concat(strikesPut);
 
-      // Find the domains of this data
-      xbar.domain([0, d3.max(prices)]);
-      ybar1.domain(strikesCall);
-      ybar2.domain(strikesPut);
+    // Find the domains of this data
+    xbar.domain([0, d3.max(prices)]);
+    ybar1.domain(strikesCall);
+    ybar2.domain(strikesPut);
 
-      // Remove old bars and axes
-      chart1.selectAll(".bar").remove()
-      chart2.selectAll(".bar2").remove()
-      chart1.select(".y.axis").remove()
-      chart2.select(".y.axis").remove()
-      chart1.select(".x.axis").remove()
-      chart2.select(".x.axis").remove()
-      chart1.select("text").remove()
-      chart2.select("text").remove()
+    // Remove old bars and axes
+    chart1.selectAll(".bar").remove()
+    chart2.selectAll(".bar2").remove()
+    chart1.select(".y.axis").remove()
+    chart2.select(".y.axis").remove()
+    chart1.select(".x.axis").remove()
+    chart2.select(".x.axis").remove()
+    chart1.select("text").remove()
+    chart2.select("text").remove()
 
-      // Create the call bar charts
-      chart1.selectAll(".bar")
-          .data(optionsJSON[cities[k].name].call)
-        .enter().append("rect")
-          .attr("class", "bar")
-          .attr("y", function(d) {return ybar1(d.strike); })
-          .attr("height", ybar1.rangeBand())
-          .attr("x", 1)
-          .attr("width", function(d) {return xbar(d.price*100); })
-          .on("click", function(d,i) {
-              // Edit the visibility of the inputs and the text beside them
-              document.getElementById("optCounterPut").style.visibility = "hidden"
-              document.getElementById("optCounterCall").style.visibility = "visible"
-              document.getElementById("optTypeCall").innerHTML = "Buy call option with strike $" +d.strike +" for a price of $" +formatValue(d.price*100)
-             // Amount of options is zero if the option is not in the dict
-             if (allData[k][d.strike+"c"] === undefined) {
-                document.getElementById("numCall").value = 0
-            // Amount of options is equal to the first element of the array in the dict
-             } else {
-                document.getElementById("numCall").value = allData[k][d.strike+"c"][0]
-             }
-             // Set this option info to the variable 
-             optionInfo = d
-             console.log(d)
-          })
-          .style("opacity", 0)
-          .transition().duration(1000)
-          .style("opacity", 1);
+    // Create the call bar charts
+    chart1.selectAll(".bar")
+        .data(optionsJSON[cities[k].name].call)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("y", function(d) {return ybar1(d.strike); })
+        .attr("height", ybar1.rangeBand())
+        .attr("x", 1)
+        .attr("width", function(d) {return xbar(d.price*100); })
+        .on("click", function(d,i) {
+          // Edit the visibility of the inputs and the text beside them
+          document.getElementById("optCounterPut").style.visibility = "hidden"
+          document.getElementById("optCounterCall").style.visibility = "visible"
+          document.getElementById("optTypeCall").innerHTML = "Buy call option with strike $" 
+                                  +d.strike +" for a price of $" +formatValue(d.price*100)
+          // Amount of options is zero if the option is not in the dict
+          if (allData[k][d.strike+"c"] === undefined) {
+              document.getElementById("numCall").value = 0
+          // Amount of options is equal to the first element of the array in the dict
+           } else {
+            document.getElementById("numCall").value = allData[k][d.strike+"c"][0]
+           }
+           // Set this option info to the variable 
+          optionInfo = d
+        })
+        .style("opacity", 0)
+        .transition().duration(1000)
+        .style("opacity", 1);
 
-      // Create the put bar charts with
-      chart2.selectAll(".bar2")
-          .data(optionsJSON[cities[k].name].put)
-        .enter().append("rect")
-          .attr("class", "bar2")
-          .attr("y", function(d) {return ybar2(d.strike); })
-          .attr("height", ybar2.rangeBand())
-          .attr("x", 1)
-          .attr("width", function(d) {return xbar(d.price*100); })
-          .on("click", function(d,i) {
-             // Edit the visibility of the inputs and the text beside them
-             document.getElementById("optCounterCall").style.visibility = "hidden"
-             document.getElementById("optCounterPut").style.visibility = "visible"
-             document.getElementById("optTypePut").innerHTML = "Buy put option with strike $" +d.strike +" for a price of $" +formatValue(d.price*100)
-             // Amount of options is zero if the option is not in the dict
-             if (allData[k][d.strike+"p"] === undefined) {
-                document.getElementById("numPut").value = 0
-              // Amount of options is equal to the first element of the array in the dict
-             } else {
-                document.getElementById("numPut").value = allData[k][d.strike+"p"][0]
-             }
-             // Set this option info to the variable
-             optionInfo = d
-          })
-          .style("opacity", 0)
-          .transition().duration(1000)
-          .style("opacity", 1);
+    // Create the put bar charts with
+    chart2.selectAll(".bar2")
+        .data(optionsJSON[cities[k].name].put)
+      .enter().append("rect")
+        .attr("class", "bar2")
+        .attr("y", function(d) {return ybar2(d.strike); })
+        .attr("height", ybar2.rangeBand())
+        .attr("x", 1)
+        .attr("width", function(d) {return xbar(d.price*100); })
+        .on("click", function(d,i) {
+         // Edit the visibility of the inputs and the text beside them
+         document.getElementById("optCounterCall").style.visibility = "hidden"
+         document.getElementById("optCounterPut").style.visibility = "visible"
+         document.getElementById("optTypePut").innerHTML = "Buy put option with strike $" +d.strike +" for a price of $" +formatValue(d.price*100)
+         // Amount of options is zero if the option is not in the dict
+         if (allData[k][d.strike+"p"] === undefined) {
+          document.getElementById("numPut").value = 0
+          // Amount of options is equal to the first element of the array in the dict
+         } else {
+          document.getElementById("numPut").value = allData[k][d.strike+"p"][0]
+         }
+         // Set this option info to the variable
+         optionInfo = d
+        })
+        .style("opacity", 0)
+        .transition().duration(1000)
+        .style("opacity", 1);
 
-        // y axis call options
-        chart1.append("g")
-          .attr("class", "y axis")
-          .call(yAxisbar1)
-          .style("opacity", 0)
-          .transition().duration(1000)
-          .style("opacity", 1);
+      // y axis call options
+      chart1.append("g")
+            .attr("class", "y axis")
+            .call(yAxisbar1)
+            .style("opacity", 0)
+            .transition().duration(1000)
+            .style("opacity", 1);
 
-        chart1.append("text")
+      chart1.append("text")
           .attr("x", -30)
           .attr("y", -15)
           .attr("dy", ".71em")
@@ -1339,15 +1392,15 @@ d3.json("finalData.json", function(error, data) {
           .transition().duration(1000)
           .style("opacity", 1);
 
-      // y axis put options
-      chart2.append("g")
+    // y axis put options
+    chart2.append("g")
           .attr("class", "y axis")
           .call(yAxisbar2)
           .style("opacity", 0)
           .transition().duration(1000)
           .style("opacity", 1);
 
-      chart2.append("text")
+    chart2.append("text")
           .attr("x", -30)
           .attr("y", -15)
           .attr("dy", ".71em")
@@ -1356,8 +1409,8 @@ d3.json("finalData.json", function(error, data) {
           .transition().duration(1000)
           .style("opacity", 1);
 
-      // x axis call options
-      chart1.append("g")
+    // x axis call options
+    chart1.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + heightbar + ")")
           .call(xAxisbar)
@@ -1365,15 +1418,14 @@ d3.json("finalData.json", function(error, data) {
           .transition().duration(1000)
           .style("opacity", 1);
 
-      // x axis put options
-      chart2.append("g")
+    // x axis put options
+    chart2.append("g")
           .attr("class", "x axis")
           .attr("transform", "translate(0," + heightbar + ")")
           .call(xAxisbar)
           .style("opacity", 0)
           .transition().duration(1000)
           .style("opacity", 1);
-
   }
 
 // ------------------------------------------------------------------
@@ -1387,17 +1439,20 @@ d3.json("finalData.json", function(error, data) {
     d3.select("body").append("input")
     .attr("id", "slider")
     .attr("type", "range")
-    .attr("min", -20)
-    .attr("max", 20)
+    .attr("min", -5)
+    .attr("max", 5)
     .attr("value", thisAmount[k]/5)
     .style("visibility", "visible")
     .text("works?")
     .on("change", function() {
-          allData[k]["shares"] = [this.value*5, ""]
-          payoffLegendName()
-          payoffResult()
-          moneyLeft()
-    }); 
+      allData[k]["shares"] = [this.value*5, ""]
+      payoffLegendName()
+      payoffResult()
+      moneyLeft()
+      if (allData[k]["shares"] !== undefined) {
+        document.getElementById("shareSlider").innerHTML =  this.value*5 +" shares"
+      }
+    });
   }
 
 // ------------------------------------------------------------------
@@ -1406,50 +1461,49 @@ d3.json("finalData.json", function(error, data) {
 
   // Horizontal brush
   function brushedx() {
-      // Set the main x domain to the brushed domain
-      x.domain(brushx.empty() ? x2.domain() : brushx.extent());
-      console.log(brushx.extent())
-      // Transition back to normal if the brush is empty
-      if (brushx.empty()) {
-          main.select(".x.axis")
-              .transition().duration(1000)
-              .call(xAxis);
-          for (i = 0; i<cities.length; i++) {
-              main.select("#"+cities[i].name)
-                  .transition().duration(1000)
-                  .attr("d", function(d){return line1(d.values)});
-          };
-      //Edit the main graph to the extent of the brush
-      } else {
-          main.select(".x.axis").call(xAxis);
-          for (i = 0; i<cities.length; i++) {
-              main.select("#"+cities[i].name)
-                  .attr("d", function(d){return line1(d.values)});
-          };
-      }
+    // Set the main x domain to the brushed domain
+    x.domain(brushx.empty() ? x2.domain() : brushx.extent());
+    // Transition back to normal if the brush is empty
+    if (brushx.empty()) {
+      main.select(".x.axis")
+          .transition().duration(1000)
+          .call(xAxis);
+      for (i = 0; i<cities.length; i++) {
+        main.select("#"+cities[i].name)
+            .transition().duration(1000)
+            .attr("d", function(d){return line1(d.values)});
+      };
+    //Edit the main graph to the extent of the brush
+    } else {
+        main.select(".x.axis").call(xAxis);
+        for (i = 0; i<cities.length; i++) {
+          main.select("#"+cities[i].name)
+              .attr("d", function(d){return line1(d.values)});
+        };
+    }
   }
 
   // Vertical brush
   function brushedy() {
-      // Set the main y domain to the brushed domain
-      y.domain(brushy.empty() ? y4.domain() : brushy.extent());
-      // Transition back to normal if the brush is empty
-      if (brushy.empty()) {
-          main.select(".y.axis")
-              .transition().duration(1000)
-              .call(yAxis);
-          for (i = 0; i<cities.length; i++) {
-              main.select("#"+cities[i].name)
-                  .transition().duration(1000)
-                  .attr("d", function(d){return line1(d.values)});
-          };
-      // Edit the main graph to the extent of the brush
-      } else {
-          main.select(".y.axis").call(yAxis);
-          for (i = 0; i<cities.length; i++) {
-              main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
-          };
-      }
+    // Set the main y domain to the brushed domain
+    y.domain(brushy.empty() ? y4.domain() : brushy.extent());
+    // Transition back to normal if the brush is empty
+    if (brushy.empty()) {
+      main.select(".y.axis")
+          .transition().duration(1000)
+          .call(yAxis);
+      for (i = 0; i<cities.length; i++) {
+        main.select("#"+cities[i].name)
+            .transition().duration(1000)
+            .attr("d", function(d){return line1(d.values)});
+      };
+    // Edit the main graph to the extent of the brush
+    } else {
+      main.select(".y.axis").call(yAxis);
+      for (i = 0; i<cities.length; i++) {
+        main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
+      };
+    }
   }
 
 // ------------------------------------------------------------------
@@ -1457,6 +1511,7 @@ d3.json("finalData.json", function(error, data) {
 // ------------------------------------------------------------------
     
     function bullSpread() {
+      clearInput()
       investButton = false
       checked_boxes[k] = 0
       allData[k] = {}
@@ -1469,20 +1524,21 @@ d3.json("finalData.json", function(error, data) {
             longPrice = optionsJSON[cities[k].name].call[i].price
           }
           if (i == optionsJSON[cities[k].name].call.length-1) {
-              shortStrike = optionsJSON[cities[k].name].call[i].strike
-              shortPrice = optionsJSON[cities[k].name].call[i].price
-              allData[k][shortStrike+"c"] = [-1, shortPrice*100]
+            shortStrike = optionsJSON[cities[k].name].call[i].strike
+            shortPrice = optionsJSON[cities[k].name].call[i].price
+            allData[k][shortStrike+"c"] = [-1, shortPrice*100]
           }
 
         }
-        allData[k][longStrike+"c"] = [1, longPrice*100]
-        editSlider()
-        payoffLegendName()
-        payoffResult()
-        moneyLeft()
+      allData[k][longStrike+"c"] = [1, longPrice*100]
+      editSlider()
+      payoffLegendName()
+      payoffResult()
+      moneyLeft()
     }
 
     function bearSpread() {
+      clearInput()
       investButton = false
       checked_boxes[k] = 1
       allData[k] = {}
@@ -1495,11 +1551,10 @@ d3.json("finalData.json", function(error, data) {
           longPrice = optionsJSON[cities[k].name].call[i].price
         }
         if (i == 0) {
-            shortStrike = optionsJSON[cities[k].name].call[i].strike
-            shortPrice = optionsJSON[cities[k].name].call[i].price
-            allData[k][shortStrike+"c"] = [-1, shortPrice*100]
+          shortStrike = optionsJSON[cities[k].name].call[i].strike
+          shortPrice = optionsJSON[cities[k].name].call[i].price
+          allData[k][shortStrike+"c"] = [-1, shortPrice*100]
         }
-
       }
       allData[k][longStrike+"c"] = [1, longPrice*100]
       editSlider()
@@ -1509,6 +1564,7 @@ d3.json("finalData.json", function(error, data) {
     }
 
     function backSpread() {
+      clearInput()
       investButton = false
       checked_boxes[k] = 2
       allData[k] = {}
@@ -1536,8 +1592,9 @@ d3.json("finalData.json", function(error, data) {
     }
 
     function strangleSpread() {
+      clearInput()
       investButton = false
-      checked_boxes[k] = 3
+      checked_boxes[k] = 4
       allData[k] = {}
       differenceCall = 10000
       for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
@@ -1566,8 +1623,9 @@ d3.json("finalData.json", function(error, data) {
     }
 
     function ironSpread() {
+      clearInput()
       investButton = false
-      checked_boxes[k] = 4
+      checked_boxes[k] = 3
       allData[k] = {}
       differenceCall = 10000
       for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
@@ -1615,18 +1673,18 @@ d3.json("finalData.json", function(error, data) {
 // ------------------------------------------------------------------
   
   function moneyLeft() {
-    totalInvestment = 40000
+    totalInvestment = 10000
     // for each stock
     for (i = 0; i < allData.length; i++) {
-      // for each element in the stock
-        for (j = 0; j < Object.keys(allData[i]).length; j++) {
-            if (Object.keys(allData[i])[j] == "shares") {
-              totalInvestment -= allData[i][Object.keys(allData[i])[j]][0]*thisPrice[i]
-            } else {
-              totalInvestment -=allData[i][Object.keys(allData[i])[j]][0]*
-                                allData[i][Object.keys(allData[i])[j]][1]
-            }
+    // for each element in the stock
+      for (j = 0; j < Object.keys(allData[i]).length; j++) {
+        if (Object.keys(allData[i])[j] == "shares") {
+          totalInvestment -= allData[i][Object.keys(allData[i])[j]][0]*thisPrice[i]
+        } else {
+          totalInvestment -=allData[i][Object.keys(allData[i])[j]][0]*
+                            allData[i][Object.keys(allData[i])[j]][1]
         }
+      }
     }
     // Set the amout of money left on the HTML page
     document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
@@ -1642,15 +1700,19 @@ d3.json("finalData.json", function(error, data) {
     prof = 0
     resultTest = ""
     for (i = 0; i < cities.length; i++) {
-        stockName = cities[i].name
-        if (payoffData[i].length !== 0) {
-          finalKey = Math.round(parseInt(fullData[0][stockName]) - thisPrice[i]+30)
-          stockResult = payoffData[i][payoffData[i].length-1][finalKey].price
-          prof += stockResult
-          resultTest += stockName +": " +formatCurrency(stockResult) + "\n"
+      stockName = cities[i].name
+      if (payoffData[i].length !== 0) {
+        if (GBM === true) {
+          finalKey = Math.round(GBMPrice[i] - thisPrice[i]+30)
         } else {
-          resultTest += stockName +": $ 0.00 \n"
+          finalKey = Math.round(lastPrice[i] - thisPrice[i]+30)
         }
+        stockResult = payoffData[i][payoffData[i].length-1][finalKey].price
+        prof += stockResult
+        resultTest += stockName +": " +formatCurrency(stockResult) + "\n"
+      } else {
+        resultTest += stockName +": $ 0.00 \n"
+      }
     }
     if (prof >= 0) {
       resultTest += "You made a PROFIT of " +formatCurrency(prof)
@@ -1662,28 +1724,49 @@ d3.json("finalData.json", function(error, data) {
     }
     investButton = true
     payoffResult()
+    GBM = false
+  }
+
+  function GBMresults() {
+    GBMPrice = []
+    sigma = 0.5*Math.random()
+    mu = 0.5*Math.random()
+    for (l = 0; l<cities.length; l++) {
+      So = thisPrice[l]
+      dt = (14/252)/1000
+      for (i=0; i<1000; i++) {
+        So *= Math.exp((mu - 0.5*sigma*sigma)*dt + sigma*eps()*Math.sqrt(dt))
+      }
+      So = d3.max([So,thisPrice[l]-30])
+      So = d3.min([So,thisPrice[l]+30])
+      GBMPrice.push(So)
+    }
+    GBM = true
+    results()
   }
 
   function optGraphPut() {
-      // Set the amount of put options of specific strike in the data list
-      amountOpts = document.getElementById("numPut").value
-      allData[k][optionInfo.strike+"p"] = [amountOpts, optionInfo.price*100]
-      payoffResult()
-      payoffLegendName()
-      moneyLeft()
+    // Set the amount of put options of specific strike in the data list
+    amountOpts = document.getElementById("numPut").value
+    allData[k][optionInfo.strike+"p"] = [amountOpts, optionInfo.price*100]
+    payoffResult()
+    payoffLegendName()
+    moneyLeft()
   }
 
   function optGraphCall() {
-      // Set the amount of call options of specific strike in the data list
-      amountOpts = document.getElementById("numCall").value
-      allData[k][optionInfo.strike+"c"] = [amountOpts, optionInfo.price*100]
-      payoffResult()
-      payoffLegendName()
-      moneyLeft()
+    // Set the amount of call options of specific strike in the data list
+    amountOpts = document.getElementById("numCall").value
+    allData[k][optionInfo.strike+"c"] = [amountOpts, optionInfo.price*100]
+    payoffResult()
+    payoffLegendName()
+    moneyLeft()
   }
 
   function clearAll() {
+    clearInput()
     allData = [{},{},{},{},{},{},{},{}]
+    checked_boxes = [-1,-1,-1,-1,-1,-1,-1,-1]
     unCheckBoxes()
     editSlider()
     payoffResult()
@@ -1693,6 +1776,7 @@ d3.json("finalData.json", function(error, data) {
   }
 
   function clearStock() {
+    clearInput()
     allData[k] = {}
     unCheckBoxes()
     editSlider()
@@ -1701,7 +1785,22 @@ d3.json("finalData.json", function(error, data) {
     moneyLeft()
   }
 
+  function clearInput() {
+    document.getElementById("numPut").value = 0
+    document.getElementById("numCall").value = 0
+  }
+
+// ------------------------------------------------------------------
+// Tour of visualisation
+// ------------------------------------------------------------------  
+
   function tour() {
+    if (numAbout !== 0) {
+      document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
+    }
+    if (numInfo !== 0 ) {
+      document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
+    }
     remember = allData[k]
     allData[k] = {}
     d3.select("svg").style("opacity", 0.6)
@@ -1712,9 +1811,7 @@ d3.json("finalData.json", function(error, data) {
     }
     tour2()
   }
-// ------------------------------------------------------------------
-// Tour of visualisation
-// ------------------------------------------------------------------
+
   function tour2() {
     if (numtour == 10) {
       tour3()
@@ -1780,13 +1877,19 @@ d3.json("finalData.json", function(error, data) {
   }
 
   function about() {
+    if (numtour !== 0) {
+      document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
+    }
+    if (numInfo !==0 ) {
+      document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
+    }
     d3.select("svg").style("opacity", 0.6)
     numAbout = 1
     about2()
   }
 
   function about2() {
-    if (numAbout == 4) {
+    if (numAbout === 4) {
       about3()
     } else {
       if (numAbout != 1) {
@@ -1798,8 +1901,38 @@ d3.json("finalData.json", function(error, data) {
   }
 
   function about3() {
-    document.getElementById("help_"+(numAbout-1)).style.visibility = "hidden"
-      d3.select("svg").style("opacity", 1)
+    document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
+    d3.select("svg").style("opacity", 1)
+  }
+
+  function info() {
+    document.getElementById("strats").style.visibility = "visible"
+    if (numtour !== 0) {
+      document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
+    }
+    if (numAbout !== 0) {
+      document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
+    }
+    d3.select("svg").style("opacity", 0.6)
+    numInfo = 1
+    info2()
+  }
+
+  function info2() {
+    if (numInfo === 7) {
+      info3()
+    } else {
+      if (numInfo != 1) {
+        document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
+      }
+      document.getElementById("info_"+numInfo).style.visibility = "visible"
+      numInfo += 1
+      }
+  }
+
+  function info3() {
+    document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
+    d3.select("svg").style("opacity", 1)
   }
 
   function unCheckBoxes() {
@@ -1813,18 +1946,26 @@ d3.json("finalData.json", function(error, data) {
     boxes[checked_boxes[k]].checked = true
   }
 
-  }
-
 // ------------------------------------------------------------------
 // END OF JAVASCRIOT
 // ------------------------------------------------------------------
-
+}
 </script>
-<div id="about" onclick="about()"></div>
-<p id="about_1" class="box" onclick="about2()">Hello and welcome to my visualisation! Many first time investors hear stories about people who gain large amounts of money by investing in the stock market. Usually these people invest in options and not in shares. But without a good view of what options really are, they can be a very dangerous investment. As a result, many people who randomly invest in options lose their entire investment. <br> For this visualisation you will be able to invest in options or shares. Click the next button to read about what shares and options really are, or visit the tour to find out how my visualisation works</p>
-<p id="about_2" class="box" onclick="about2()">A share is a unit of ownership in a corporation or financial asset. Thus, if you own a share of Apple, you "own" part Apple. Although you dont have direct control over buisiness operations, you are entitled to an equal distribution of the profits, in the form of dividend. Many people who invest in shares seek to obtain profit in two possible ways:<br> 1. Price differences of the shares between buying and selling them <br> 2. Profits obtained from dividends. <br> In this visualisation profit can be obtained from the first way. Your profit will be shown as : # Stocks * (ST - St) where ST is the stock price at time of selling and St that of buying. <br> The next section will explain options </p>
-<p id="about_3" class="box" onclick="about2()">As mentioned previously, options can be a dangerous investment. In this visualisation I look into two different options: Call and Put options. A call (put) option gives the holder the right, but not the obligation, to enter into a contract to buy (sell) 100 shares for a predetermined price, called the strike price, and date, called the expiration date. <br> What makes this way of investing dangerous, is that if the price at expiration date of a call (pur) is lower (higher) than the strike price, the buyer loses all his investment! Your profit will be shown as: 100 * max(St-K,0) - price </p>
+<div id="about_1" class="box">
+<p>Hello and welcome to my visualisation! Many first time investors hear stories about people who gain large amounts of money by investing in the stock market. Usually these people invest in options and not in shares. But without a good view of what options really are, they can be a very dangerous investment. As a result, many people who randomly invest in options lose their entire investment. <br> For this visualisation you will be able to invest in options or shares. Click the next button to read about what shares and options really are, visit the tour to find out how my visualisation works, visit the option info to find information about the strategies that are available or visit the terms tab for often used abbreviations.</p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
 </div>
+
+<div id="about_2" class="box">
+<p>A share is a unit of ownership in a corporation or financial asset. Thus, if you own a share of Apple, you "own" part Apple. Although you don't have direct control over buisiness operations, you are entitled to an equal distribution of the profits, in the form of dividend. Many people who invest in shares seek to obtain profit in two possible ways:<br> 1. Price differences of the shares between buying and selling them <br> 2. Profits obtained from dividends. <br> In this visualisation profit can be obtained from the first way. Your profit will be shown as <b># Stocks * (ST - S0)</b> where <b>ST</b> is the stock price at time of selling and <b>S0</b> that of buying. <br> The next section will explain options. </p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
+</div>
+
+<div id="about_3" class="box">
+<p>As mentioned previously, options can be a dangerous investment. In this visualisation I look into two different options: Call and Put options. A call (put) option gives the holder the right, but not the obligation, to enter into a contract to buy (sell) 100 shares for a predetermined price, called the strike price (K), and date, called the expiration date. <br> What makes this way of investing dangerous, is that if the price at expiration date of a call (put) is lower (higher) than the strike price, the buyer loses all his investment! Your profit will be shown as <b>100 * max(ST-K,0) - price</b> for calls and <b>100 * max(K-ST,0) - price</b> for puts.</p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
+</div>
+
   <div id="help_0" class="bubble1">
     <p>Hello, and welcome to the tour of my visualisation.<br> I advise all of you to first look at the "about" button before going through the tour! If you have, or dont feel like it, then press the "next" button!</p>
     <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
@@ -1875,9 +2016,50 @@ d3.json("finalData.json", function(error, data) {
     <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
   </div>
 
+  <div id="info_1" class="bubble">
+    <p>Spreads are very important when investing in options. Investing in only a put or call option can result in losing your entire investment. Spreads are a way to both hedge your losses when the market does something unexpected or gives you a way to obtain payoffs which can only be obtained when combining options. In the following steps all the spreads below will be explained. <br> Note: Unknown terms used in the comming sections can be found in "terms" box above.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="info_2" class="bubble">
+    <p>The first is the bull spread. This spread is used when the investor expects the stock price to rise, but still wants to limit his loss after a possible decline in price. For example, assume Apple releases a brand new phone. You, as an investor, expect this new phone to be very popular and thus expect Apples stock price to rise. But you know there is also a small probability that the phone will not get a fantastic reception, and thus want to limit the loss after this occurance. <br> This spread is obtained by buying one ATM call option, and writing one OTM call option</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="info_3" class="bubble">
+    <p>The second is the bear spread. In general, the bear spread is used when the investor expects the stock to behave in the opposite way as the bull spread. Thus assuming Apple releases a new phone, you expect this phone to have a very poor reception, but know there is a chance that it will be popular. <br> This spread is obtained by buying one ATM call option, and writing one ITM call option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="info_4" class="bubble">
+    <p>The third, the back spread, is a somewhat odd looking spread. This spread is used when you know for sure that the stock price is going to change, and expect it to rise, but that the chance of it dropping is larger than, for example in the bull spread. As an example we can turn to Apple again. The release of the iWatch was not well known, and you expect it to have a great reception. But due to the fact that it is the first ever release, it could also be a bust. In both scenarios you will gain profit. <br> This spread is obtained by writing one ATM call option, and buying two OTM call options</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="info_5" class="bubble">
+    <p>The iron butterfly spread is the third spread. In this spread you expect the stock price to stay put, but limit your losses when it does move. An example would be a large period in time where neither Apple nor his impetitors do not expect to make any ground breaking annoucements. <br> This spread is obtained by writing an ATM call and put option, and buying an OTM call and put option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="info_6" class="bubble">
+    <p>Finally, the last spread I consider is the strangle spread. In this spread you expect expect the stock price to either rise or drop, but give equal probability to both occurances. An example would be when both Apple and one of its competitors releases a new item, but do not know the ins and outs of either of them. <br> This spread is obtained by buying one ATM call option and writing one ATM put option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+  </div>
+
+  <div id="terms" class="box">
+  <p>S0 : Price at buying <br>
+  ST : Price at selling <br>
+  K  : Price to buy or sell stocks at in a future date (strike price) <br>
+  ATM: option where K ~ S0 (At the money) <br>
+  ITM: option where K &lt; S0 if call; K &gt; S0 if put (in the money) <br>
+  OTM: option where K &gt; S0 if call; K &lt; S0 if put (out the money)</p>
+  <a onclick="document.getElementById('terms').style.visibility = 'hidden'" class="exitBut"/>X</a>
+</div>
+
 <div id="verticalline"></div>
 <div id="horizontalline1"></div>
 <div id="horizontalline2"></div>
+<div id="shareSlider"></div>
 
 <form id="strats">
 <input id="bull" type="radio" name="strategy" value="Bull" onchange="bullSpread()">Bull Spread<br>
