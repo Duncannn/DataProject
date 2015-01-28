@@ -236,7 +236,7 @@
 #help_3{
   position: absolute;
   left:138px;
-  top:290px;
+  top:260px;
   visibility:hidden;
 }
 #help_4 {
@@ -248,67 +248,67 @@
 #help_5 {
   position: absolute;
   left:100px;
-  top:350px;
+  top:330px;
   visibility:hidden;
 }
 #help_6 {
   position: absolute;
   left:925px;
-  top:45px;
+  top:15px;
   visibility:hidden;
 }
 #help_7 {
   position: absolute;
   left:925px;
-  top:130px;
+  top:105px;
   visibility:hidden;
 }
 #help_8 {
   position: absolute;
   left:925px;
-  top:150px;
+  top:130px;
   visibility:hidden;
 }
 #help_9 {
   position: absolute;
   left:925px;
-  top:255px;
+  top:270px;
   visibility:hidden;
 }
 #info_1 {
   position: absolute;
   left:900px;
-  top:30px;
+  top:5px;
   visibility:hidden;
 }
 #info_2 {
   position: absolute;
   left:900px;
-  top:10px;
+  top:5px;
   visibility:hidden;
 }
 #info_3{
   position: absolute;
   left:900px;
-  top:90px;
+  top:85px;
   visibility:hidden;
 }
 #info_4 {
   position: absolute;
   left:900px;
-  top:45px;
+  top:40px;
   visibility:hidden;
 }
 #info_5 {
   position: absolute;
   left:900px;
-  top:127px;
+  top:120px;
   visibility:hidden;
 }
 #info_6 {
   position: absolute;
   left:900px;
-  top:145px;
+  top:140px;
   visibility:hidden;
 }
 .bar {
@@ -335,7 +335,7 @@ body {
   font: 10px sans-serif;
   background-color: #f9f9f9;
 }
-.city {
+.stock1 {
   clip-path: url(#clip);
   fill: none;
   stroke: steelblue;
@@ -452,7 +452,7 @@ body {
           <li>Visualising Investment Returns</li>
           <li> <a onclick="about()" class="button"/>About</a></li>
           <li> <a onclick="tour()" class="button"/>Tour</a></li>
-          <li> <a onclick="info()" class="button"/>Option Info</a></li>
+          <li> <a onclick="info()" class="button"/>Option Strategy Info</a></li>
           <li> <a onclick="termFun()" class="button"/>Terms</a></li>
         </ul>
       </div>
@@ -479,39 +479,29 @@ body {
 
 
 <script>
-// VARY THE AMOUNT OF STRATS I CAN BUY
-// edit lastPrice into results()
-// lastprice only with invested stuff. if payoffdata[k].length !== 0
-// EDIT IS NOTHING IS CLICKED, EVERYTHING STAYS....
+// SET THE BOXES BACK AFTER THE TOUR
 
 // First one
 var optionsJSON;
 
 // Some global variables I'm using
 var k = 0,
-    emptyTour = true,
     GBM = false,
     investButton = false,
     activeStock = [0, 0, 0, 0, 0, 0, 0, 0],
-    dateToMaturity = 20,
     thisAmount = [0,0,0,0,0,0,0,0],
-    shareAmount = 0,
-    shareIndex = [0,0,0,0,0,0,0,0],                                     
+    shareAmount = 0,                                     
     thisAmountOpt = [0,0,0,0,0,0,0,0],
     newPrice = [0,0,0,0,0,0,0,0],
     checked_boxes = [-1,-1,-1,-1,-1,-1,-1,-1],
     thisPrice = [],
     lastPrice = [],
-    cities = 0,
+    stockData = 0,
     numtour = 0,
     numAbout = 0,
     numInfo = 0,
     totalInvestment = 10000,
     strUser = "",
-    strike1,
-    price1,
-    strike2,
-    price2,
     remember,
     fullData,
     allData = [{},{},{},{},{},{},{},{}],
@@ -519,23 +509,23 @@ var k = 0,
 
 // Margins   
 var margin = {top: 20, right: 525, bottom: 400, left: 130},
-    marginxBrush = {top: 330, right: 525, bottom: 320, left: 130},
+    marginXBrush = {top: 330, right: 525, bottom: 320, left: 130},
     marginPayoff = {top: 450, right: 525, bottom: 55, left: 50},
-    marginyBrush = {top: 20, right: 1185, bottom: 400, left: 30},
-    marginbar = {top:380, right: 20, bottom: 120, left:950};
+    marginYBrush = {top: 20, right: 1185, bottom: 400, left: 30},
+    marginBar = {top:380, right: 20, bottom: 120, left:950};
 
 // Width and heights
 //margins right + 135
 var width = 1280 - margin.left - margin.right,
-    width3 = 1280 - marginPayoff.left - marginPayoff.right,
-    width4 = 1280 - marginyBrush.left - marginyBrush.right,
-    widthbar = 1280 - marginbar.left - marginbar.right,
+    widthPayoff = 1280 - marginPayoff.left - marginPayoff.right,
+    widthYBrush = 1280 - marginYBrush.left - marginYBrush.right,
+    widthBar = 1280 - marginBar.left - marginBar.right,
 
     height = 700 - margin.top - margin.bottom,
-    height2 = 700 - marginxBrush.top - marginxBrush.bottom,
-    height3 = 700 - marginPayoff.top - marginPayoff.bottom,
-    height4 = 700 - marginyBrush.top - marginyBrush.bottom;
-    heightbar = (700 - marginbar.top - marginbar.bottom)/2;
+    heightXBrush = 700 - marginXBrush.top - marginXBrush.bottom,
+    heightPayoff = 700 - marginPayoff.top - marginPayoff.bottom,
+    heightYBrush = 700 - marginYBrush.top - marginYBrush.bottom,
+    heightBar = (700 - marginBar.top - marginBar.bottom)/2;
 
 // Date and money elements
 var parseDate = d3.time.format("%d-%m-%Y").parse,
@@ -552,17 +542,16 @@ var eps = d3.random.normal();
 // Scaling
 var x = d3.time.scale().range([0, width]),
     x2 = d3.time.scale().range([0, width]),
-    x3 = d3.scale.linear().range([0,width3]),
-    x4 = d3.time.scale().range([0, width4]),
-    //xbar = d3.scale.linear().range([widthbar, 0]),
-    xbar = d3.scale.linear().range([0, widthbar]),
+    x3 = d3.scale.linear().range([0,widthPayoff]),
+    x4 = d3.time.scale().range([0, widthYBrush]),
+    xbar = d3.scale.linear().range([0, widthBar]),
 
     y = d3.scale.linear().range([height, 0]),
-    y2 = d3.scale.linear().range([height2, 0]),
-    y3 = d3.scale.linear().range([height3, 0]),
-    y4 = d3.scale.linear().range([height4, 0]),
-    ybar1 = d3.scale.ordinal().rangeRoundBands([0, heightbar], .2);
-    ybar2 = d3.scale.ordinal().rangeRoundBands([0, heightbar], .2);
+    y2 = d3.scale.linear().range([heightXBrush, 0]),
+    y3 = d3.scale.linear().range([heightPayoff, 0]),
+    y4 = d3.scale.linear().range([heightYBrush, 0]),
+    ybar1 = d3.scale.ordinal().rangeRoundBands([0, heightBar], .2),
+    ybar2 = d3.scale.ordinal().rangeRoundBands([0, heightBar], .2);
 
 // Axes
 var xAxis = d3.svg.axis().scale(x).orient("bottom"),
@@ -573,9 +562,9 @@ var xAxis = d3.svg.axis().scale(x).orient("bottom"),
 
     yAxis = d3.svg.axis().scale(y).orient("left"),
     yAxis3 = d3.svg.axis().scale(y3).orient("left"),
-    yAxis4 = d3.svg.axis().scale(y4).orient("left");
-    yAxisbar1 = d3.svg.axis().scale(ybar1).orient("left")
-    yAxisbar2 = d3.svg.axis().scale(ybar2).orient("left")
+    yAxis4 = d3.svg.axis().scale(y4).orient("left"),
+    yAxisbar1 = d3.svg.axis().scale(ybar1).orient("left"),
+    yAxisbar2 = d3.svg.axis().scale(ybar2).orient("left");
 
 // Horizontal and vertical brushes
 var brushx = d3.svg.brush()
@@ -607,10 +596,6 @@ var line4 = d3.svg.line()
     .x(function(d) { return x4(d.date); })
     .y(function(d) { return y4(d.price); });
 
-// SLIDER
-
-
-
 // Appending the SVG element
 var svg = d3.select("body").append("svg")
     .attr("id","svg")
@@ -632,41 +617,49 @@ var main = svg.append("g")
 // Two brush elements
 var xBrush = svg.append("g")
     .attr("class", "xBrush")
-    .attr("transform", "translate(" + marginxBrush.left + "," + marginxBrush.top + ")");
+    .attr("transform", "translate(" + marginXBrush.left + "," 
+                                    + marginXBrush.top + ")");
 
 var yBrush = svg.append("g")
     .attr("class", "yBrush")
-    .attr("transform", "translate(" + marginyBrush.left + "," + marginyBrush.top + ")");
+    .attr("transform", "translate(" + marginYBrush.left + "," + 
+                                      marginYBrush.top + ")");
 
 // Payoff element
 var payoff = svg.append("g")
     .attr("class", "payoff")
-    .attr("transform", "translate(" + marginPayoff.left + "," + marginPayoff.top + ")");
+    .attr("transform", "translate(" + marginPayoff.left + "," + 
+                                      marginPayoff.top + ")");
 
 // Tooltip main graph
 var toolTip1 = svg.append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .attr("transform", "translate(" + margin.left + "," + 
+                                      margin.top + ")")
     .style("display", "none");
 
 // Tooltip payoff graph
 var toolTip2 = svg.append("g")
-    .attr("transform","translate(" + marginPayoff.left + "," + marginPayoff.top + ")")
+    .attr("transform","translate(" + marginPayoff.left + "," + 
+                                     marginPayoff.top + ")")
 
 // where the small charts are put in
 var chart = svg.append("g")
     .attr("class", "chart")
-    .attr("transform", "translate(" + marginbar.left +"," +marginbar.top +")");
+    .attr("transform", "translate(" + marginBar.left +"," + 
+                                      marginBar.top +")");
 
 // Bar chart
 var chart1 = svg.append("g")
     .attr("class", "chart1")
-    .attr("transform", "translate(" + marginbar.left +"," +marginbar.top +")");
-bar2 = +marginbar.top +heightbar+40 
+    .attr("transform", "translate(" + marginBar.left +"," +marginBar.top +")");
+
+var bar2 = marginBar.top +heightBar+40; 
 var chart2 = svg.append("g")
     .attr("class", "chart2")
-    .attr("transform", "translate(" + marginbar.left +"," +bar2 +")");
+    .attr("transform", "translate(" + marginBar.left +"," +bar2 +")");
 
-document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
+document.getElementById("money").innerHTML = "Money left: $" + 
+                                              formatValue(totalInvestment)
 
 // Load option data (NOT USING YET)
 d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
@@ -678,7 +671,7 @@ d3.json("finalData.json", function(error, data) {
   data = data.slice(14,data.length-1)
 
   // Color domain are all names in the data except the date
-  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "date"; }));
+  color.domain(d3.keys(data[0]).filter(function(key) {return key !== "date";}));
 
   // Parse the date
   data.forEach(function(d) {
@@ -689,8 +682,8 @@ d3.json("finalData.json", function(error, data) {
   data.sort(function(a, b) {
     return a.date - b.date;});
 
-  // Assign the cities a color and map the values 
-  cities = color.domain().map(function(name) {
+  // Assign the stocks a color and map the values 
+  stockData = color.domain().map(function(name) {
     return {
       name: name,
       values: data.map(function(d) {
@@ -700,9 +693,9 @@ d3.json("finalData.json", function(error, data) {
   });
 
   // Last known price for all stocks in one array
-  for (i = 0; i < cities.length; i++) {
-    thisPrice.push(cities[i].values[(cities[i].values).length-1].price)
-    lastPrice.push(fullData[0][cities[i].name])
+  for (i = 0; i < stockData.length; i++) {
+    thisPrice.push(stockData[i].values[(stockData[i].values).length-1].price)
+    lastPrice.push(fullData[0][stockData[i].name])
   }
 // ------------------------------------------------------------------
 // Domains
@@ -712,7 +705,8 @@ d3.json("finalData.json", function(error, data) {
 
   y.domain([
     0,
-    d3.max(cities, function(c) { return d3.max(c.values, function(v) { return v.price; }); })
+    d3.max(stockData, function(c) {return d3.max(c.values, function(v) {
+                                                        return v.price; }); })
   ]);
 
   x2.domain(x.domain());
@@ -741,12 +735,12 @@ d3.json("finalData.json", function(error, data) {
       .text("price ($)");
 
   // Place all the stocks
-  var city = main.selectAll(".city")
-      .data(cities)
+  var stock1 = main.selectAll(".stock1")
+      .data(stockData)
     .enter().append("g")
-      .attr("class", "city");
+      .attr("class", "stock1");
 
-  city.append("path")
+  stock1.append("path")
       .attr("id", function(d,i) {;return d.name})
       .attr("d", function(d) { return line1(d.values); })
       .style("stroke", function(d) { return color(d.name); })
@@ -758,7 +752,7 @@ d3.json("finalData.json", function(error, data) {
 // ------------------------------------------------------------------
 
   // Spacing between legend
-  space = height/cities.length
+  space = height/stockData.length
 
   // Add the main legend class
   var legend = svg.append("g")
@@ -766,7 +760,7 @@ d3.json("finalData.json", function(error, data) {
       
   // Add all the names with appropriate spacing  
   legend.selectAll('text')
-    .data(cities)
+    .data(stockData)
     .enter()
     .append("text")
     .attr("id", function(d,i) {return d.name})
@@ -788,6 +782,7 @@ d3.json("finalData.json", function(error, data) {
       optionbars()
       editSlider()
       unCheckBoxes()
+      sliderText()
       document.getElementById("shareHeader").style.visibility = "visible"
       if (checked_boxes[k] !== -1) {checkBoxes()}
 
@@ -795,16 +790,18 @@ d3.json("finalData.json", function(error, data) {
         tour2()
       }
       // uncheck all boxes
-
       document.getElementById("strats").style.visibility = "visible"
       // Edit the information on thfe page
-      document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
-      document.getElementById("stock").innerHTML = "Investing in " +cities[k].name;
-      document.getElementById("stockPrice").innerHTML = "Current price  " +thisPrice[k];
+      document.getElementById("money").innerHTML = 
+      "Money left: $" + formatValue(totalInvestment)
+      document.getElementById("stock").innerHTML = 
+      "Investing in " +stockData[k].name;
+      document.getElementById("stockPrice").innerHTML = 
+      "Current price  " +thisPrice[k];
       if (strUser == "shares") {
         document.getElementById("amount").value = thisAmount[k]
       }
-      // When active
+      // When  active
       if (active == true) {
         d3.select("#navbar")
           .transition().duration(1000)
@@ -820,35 +817,37 @@ d3.json("finalData.json", function(error, data) {
             .transition().duration(1000) 
             .style("stroke-width", onOpacity)
             .style("opacity", 1);
+
         // Put all stocks except this one to false
-        for (j = 0; j < cities.length; j++) {
+        for (j = 0; j < stockData.length; j++) {
           if (j != i) {
-            d3.select("#"+cities[j].name)
+            d3.select("#"+stockData[j].name)
               .transition().duration(1000) 
               .style("stroke-width", offOpacity)
               .style("opacity", 0.5);
 
-            legend.select("#"+cities[j].name)
+            legend.select("#"+stockData[j].name)
               .transition().duration(1000)
               .style("font-size","10px")
               .style("font-weight","normal")
-              cities[j].active = false;
+              stockData[j].active = false;
               activeStock[j] = 0
           };
         };
-        // Change all the lines and to normal if none are active
+
+      // Change all the lines and to normal if none are active
       } else {
         d3.select("#navbar")
           .transition().duration(1000)
           .style("background-color","maroon")
 
-        for (j = 0; j < cities.length; j++) {
-          d3.select("#"+cities[j].name)
+        for (j = 0; j < stockData.length; j++) {
+          d3.select("#"+stockData[j].name)
             .transition().duration(1000) 
             .style("stroke-width", 2)
             .style("opacity", 1);
 
-          legend.select("#"+cities[j].name)
+          legend.select("#"+stockData[j].name)
                 .transition().duration(1000)
                 .style("font-size","10px")
                 .style("font-weight","normal")
@@ -862,16 +861,16 @@ d3.json("finalData.json", function(error, data) {
   // Place the x axis for the horizontal brush
   xBrush.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height2 + ")")
+      .attr("transform", "translate(0," + heightXBrush + ")")
       .call(xAxis2);  
 
   // Place all the stocks
-  var city2 = xBrush.selectAll(".city2")
-      .data(cities)
+  var stock2 = xBrush.selectAll(".stock2")
+      .data(stockData)
     .enter().append("g")
-      .attr("class", "city2")
+      .attr("class", "stock2")
 
-  city2.append("path")
+  stock2.append("path")
       .attr("class", "line")
       .attr("d", function(d) { return line2(d.values); })
       .style("stroke", function(d) { return color(d.name); });
@@ -882,7 +881,7 @@ d3.json("finalData.json", function(error, data) {
       .call(brushx)
     .selectAll("rect")
       .attr("y", -6)
-      .attr("height", height2 + 7);  
+      .attr("height", heightXBrush + 7);  
 
 // ------------------------------------------------------------------
 // Brush Y Section
@@ -896,12 +895,12 @@ d3.json("finalData.json", function(error, data) {
       .attr("transform", "rotate(-90)")
 
   // Place all the stocks
-  var city3 = yBrush.selectAll(".city3")
-      .data(cities)
+  var stock3 = yBrush.selectAll(".stock3")
+      .data(stockData)
     .enter().append("g")
-      .attr("class", "city3")
+      .attr("class", "stock3")
 
-  city3.append("path")
+  stock3.append("path")
       .attr("class", "line")
       .attr("d", function(d) {return line4(d.values); })
       .style("stroke", function(d) { return color(d.name); });
@@ -912,7 +911,7 @@ d3.json("finalData.json", function(error, data) {
       .call(brushy)
     .selectAll("rect")
       .attr("x", 0)
-      .attr("width", width4)
+      .attr("width", widthYBrush)
 
 // ------------------------------------------------------------------
 // Tooltip Main Graph
@@ -944,11 +943,11 @@ d3.json("finalData.json", function(error, data) {
 
   // Function for when the mouse moves on the rectangle
   function mousemove() {
-    // Get the date, its index, values left and right of the date and the intrapolation
+    // Get the date, its index, values left/right of date and the intrapolation
     var mouseDate = x.invert(d3.mouse(this)[0]),              
-        i = bisectDate(cities[k].values, mouseDate, 1),                   
-        d0 = cities[k].values[i - 1],                              
-        d1 = cities[k].values[i],                            
+        i = bisectDate(stockData[k].values, mouseDate, 1),                   
+        d0 = stockData[k].values[i - 1],                              
+        d1 = stockData[k].values[i],                            
         d = mouseDate - d0.date > d1.date - mouseDate ? d1 : d0;
     
     // Move the circle on the graph where the mouse is
@@ -990,8 +989,8 @@ d3.json("finalData.json", function(error, data) {
 
   // Rectangle for when the tooltip shows if the mouse is on it
   payoff.append("rect")                                     
-      .attr("width", width3)                              
-      .attr("height", height3)                            
+      .attr("width", widthPayoff)                              
+      .attr("height", heightPayoff)                            
       .style("fill", "none")                             
       .style("pointer-events", "all")                    
       .on("mouseover", function() { toolTip2.style("display", null); })
@@ -1000,20 +999,26 @@ d3.json("finalData.json", function(error, data) {
 
   // Function for when the mouse moves on the rectangle
   function mousemovepayoff() {
-    // Get the date, its index, values left and right of the date and the intrapolation
+    // Get the number and the index of that number
     var mouseNum = x3.invert(d3.mouse(this)[0]);
     i2 = Math.round(mouseNum+30-thisPrice[k])
+
+    // Only show tooltip if there is a line
     if (payoffData[k].length !== 0) {
+
+      // Only one line, so profit doesn't get calculated
       if (payoffData[k].length === 1) {
         d = payoffData[k][payoffData[k].length-1][i2]}
+      // More lines, there is a profit variable
       else { d = profit[i2]}
+
+      // move the circle
       toolTip2.select("circle.y")                           
           .attr("transform",                             
                 "translate(" + x3(d.key) + "," +         
                                y3(d.price) + ")");
 
-          +"\n" +"strke:"+formatCurrency(d.key)
-      // Place the price above of the circle
+      // Place the profit and price above of the circle
       toolTip2.select("text.y2")
           .attr("transform",
                 "translate(" + x3(d.key) + "," +
@@ -1025,6 +1030,7 @@ d3.json("finalData.json", function(error, data) {
                 "translate(" + x3(d.key) + "," +
                                y3(d.price) + ")")
           .text("Price: "+formatCurrency(Math.round(d.key)));
+    // No tooltip if there is no investment in the stock
     } else {toolTip2.style("display", "none");}
   }
 
@@ -1040,11 +1046,11 @@ d3.json("finalData.json", function(error, data) {
   // Place the x axis
   payoff.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height3/2 + ")")
+      .attr("transform", "translate(0," + heightPayoff/2 + ")")
       .call(xAxis3)
       .append("text")
       .attr("y", 35)
-      .attr("x", width3-30)
+      .attr("x", widthPayoff-30)
       .text("price ($)");
 
   // place the y axis
@@ -1059,13 +1065,13 @@ d3.json("finalData.json", function(error, data) {
       .text("profit ($)");
   
 
-  // Graph after update (Not really that great atm) 
+  // Graph after update
   window.payoffResult = function() {
+    // Initialise variables and remove all the old graphs
     payoffData[k] = []
-    // Remove all the old graphs
-    payoff.selectAll(".city3").remove()
+    payoff.selectAll(".stock3").remove()
 
-    //
+    // Count how many options there are and remove ones with no numbers 
     optionAmount = 0
     for (m=0; m<Object.keys(allData[k]).length; m++){
       optionAmount += Math.abs(allData[k][Object.keys(allData[k])[m]][0]);
@@ -1073,12 +1079,17 @@ d3.json("finalData.json", function(error, data) {
         delete allData[k][Object.keys(allData[k])[m]];
       }
     }
+
     // Create lines if there are line elements
     if (optionAmount !== 0) {
-      // Compute all the line information
+
+      // Loop over the dictionary
       for (i = 0; i < Object.keys(allData[k]).length; i++ ){
         lineInfo =[]
+
+        // Loop over the range of possible prices
         for (j = thisPrice[k]-30; j <= thisPrice[k] +30; j++){
+
           // if it does contain c then its a call
           if (Object.keys(allData[k])[i].indexOf("c") !== -1 ){
             // replace the c
@@ -1089,6 +1100,7 @@ d3.json("finalData.json", function(error, data) {
                       *(100 * d3.max([j - thisStrike,0]) 
                       - allData[k][Object.keys(allData[k])[i]][1])
             })
+
           // if it does contain p then its a put
           } else if (Object.keys(allData[k])[i].indexOf("p") !== -1) {
             thisStrike = Object.keys(allData[k])[i].replace("p","")
@@ -1098,18 +1110,19 @@ d3.json("finalData.json", function(error, data) {
                       *(100 * d3.max([thisStrike - j,0]) 
                       - allData[k][Object.keys(allData[k])[i]][1])
             })
+
           // otherwise they are shares
           } else {
             lineInfo.push({
               key: j,
-              price: (j-thisPrice[k]) * allData[k][Object.keys(allData[k])[i]][0]
+              price: (j-thisPrice[k])* allData[k][Object.keys(allData[k])[i]][0]
             })             
           }
         }
         payoffData[k].push(lineInfo)
       }
 
-      // No profit line if there is only 1 line
+      // Create the profit line by adding all the elements
       profit = []
       for (j = 0; j < 61; j++) {
         profitKey = 0
@@ -1121,18 +1134,26 @@ d3.json("finalData.json", function(error, data) {
           price: profitKey
         })
       }
+
+      // Add the profit line to the payoff data
       if (payoffData[k].length >=2) {payoffData[k].push(profit)}
-    // Find the highest and lowest values
+
+      // Find the highest and lowest values
       yMax = 0;
       yMin = 0;
       dom = [];
-      // Done by looping over all the elements and finding the highest and lowest
+
+      // Loop over all elements and find the maximum and minimum values
       for (i = 0; i<payoffData[k].length; i++) {
         for (j = 0; j < payoffData[k][i].length; j++) {
-          if (payoffData[k][i][j].price < yMin) {yMin = payoffData[k][i][j].price}
-          else if (payoffData[k][i][j].price > yMax) {yMax=payoffData[k][i][j].price}
+          if (payoffData[k][i][j].price < yMin) 
+            {yMin = payoffData[k][i][j].price}
+          else if (payoffData[k][i][j].price > yMax) 
+            {yMax=payoffData[k][i][j].price}
         } 
       };
+
+      // This is your y-domain
       dom = [yMin, yMax]
 
       // Set the domains
@@ -1155,17 +1176,17 @@ d3.json("finalData.json", function(error, data) {
       }
 
       // Plot all the lines
-      var city3 = payoff.selectAll(".city3")
+      var stock3 = payoff.selectAll(".stock3")
           .data(dataPlot)
         .enter().append("g")
-          .attr("class", "city3");
+          .attr("class", "stock3");
 
-      city3.append("path")
-          .attr("id", function(d,i) {return cities[k].name;})
+      stock3.append("path")
+          .attr("id", function(d,i) {return stockData[k].name;})
           .attr("d", function(d) { return line3(d); })
           .style("stroke", function(d,i) {
               if (i == dataPlot.length-1) {
-                  return color(cities[k].name);
+                  return color(stockData[k].name);
               } else {return "maroon";}    
           })
           .style("stroke-width", function(d,i) {
@@ -1186,32 +1207,40 @@ d3.json("finalData.json", function(error, data) {
     // Transition the x and y axis
       payoff.select(".x.axis").transition().duration(1000)
             .call(xAxis3)
-            .attr("transform", "translate(0," + height3*intersection+ ")");
+            .attr("transform", "translate(0," + heightPayoff*intersection+ ")");
       payoff.select(".y.axis").transition().duration(1000).call(yAxis3);
 
-    // Remove the profit line, gets recalculated anyway MAY GO AWAY
+    // Reset the domains if there are no lines
     } else {
       x3.domain([thisPrice[k]-30,thisPrice[k]+30]);
       y3.domain([0,0]);
       payoff.select(".x.axis").transition().duration(1000)
             .call(xAxis3)
-            .attr("transform", "translate(0," + height3*0.5+ ")");
-      payoff.select(".y.axis").transition().duration(1000).call(yAxis3);}
+            .attr("transform", "translate(0," + heightPayoff*0.5+ ")");
+      payoff.select(".y.axis").transition().duration(1000).call(yAxis3);
+    }
 
+    // Section for the results following results() or GBM()
+    // Remove the old lines and text
     payoff.select("#resultsLine").remove()
     payoff.select("#resultsText").remove()
+
+    // Only after results is clicked
     if (investButton === true) {
+      // Find out if it was the simulated price or market price
       if (GBM === true) {
         linePrice = GBMPrice
       } else {
         linePrice = lastPrice
       }
+
+      // Append the lines and text to the payoff section
       payoff.append("line")
             .attr("id", "resultsLine")
             .attr("x1", x3(linePrice[k]))
             .attr("y1", 0)
             .attr("x2", x3(linePrice[k]))
-            .attr("y2", height3)
+            .attr("y2", heightPayoff)
             .attr("stroke-width", 2)
             .attr("stroke", "maroon")
             .attr("opacity" , 0)
@@ -1224,7 +1253,6 @@ d3.json("finalData.json", function(error, data) {
             .attr("font-weight", "bold")
             .text("Price at 23rd Jan");
     }
-
   }
 
 // ------------------------------------------------------------------
@@ -1237,42 +1265,48 @@ d3.json("finalData.json", function(error, data) {
     
   // Name and color stock
   payoffLegend.append("text")
-      .attr("x", width3 +marginPayoff.left +10)
+      .attr("x", widthPayoff +marginPayoff.left +10)
       .attr("y", 450)
-      .style("fill", color(cities[k].name))
-      .text(cities[k].name)
+      .style("fill", color(stockData[k].name))
+      .text(stockData[k].name)
 
   // Amount of stocks
   payoffLegend.append("text")
-      .attr("x", width3 +marginPayoff.left +10)
+      .attr("x", widthPayoff +marginPayoff.left +10)
       .attr("y", 470)
       .text(thisAmount[k] +" stocks")
 
   // Amount of options
   payoffLegend.append("text")
-      .attr("x", width3 +marginPayoff.left +10)
+      .attr("x", widthPayoff +marginPayoff.left +10)
       .attr("y", 490)
       .text(thisAmount[k] +" options")
 
   // Dynamically change the color and amounts
   window.payoffLegendName = function() {
     payoffLegend.select("text:nth-child(1)")
-                .style("fill", color(cities[k].name))
-                .text(cities[k].name)
+                .style("fill", color(stockData[k].name))
+                .text(stockData[k].name)
 
+    // Shares is 0 if he is not in the dictionary
     if (allData[k]["shares"] === undefined) {
       shareAmount = 0
+    // Or the first element in the dict 
     } else{
       shareAmount = allData[k]["shares"][0]
     }
+    // Set the amount of stocks
     payoffLegend.select("text:nth-child(2)")
                 .text(shareAmount +" stocks")
+
+    // Count the amount of options
     num = 0
     for (i = 0;i < Object.keys(allData[k]).length; i++){
       if (Object.keys(allData[k])[i] != "shares"){
         num += Math.abs(allData[k][Object.keys(allData[k])[i]][0])
       }
     }
+    // Add the amount to hte html page
     num = parseInt(num)
     if (num == 1) {
       payoffLegend.select("text:nth-child(3)")
@@ -1299,13 +1333,13 @@ d3.json("finalData.json", function(error, data) {
     strikesPut = [];
     pricesPut = [];
     // Append all the prices and strikes for the calls and the puts
-    for (i=0; i<optionsJSON[cities[k].name].call.length; i++){
-      strikesCall.push(optionsJSON[cities[k].name].call[i].strike)
-      pricesCall.push(optionsJSON[cities[k].name].call[i].price*100)
+    for (i=0; i<optionsJSON[stockData[k].name].call.length; i++){
+      strikesCall.push(optionsJSON[stockData[k].name].call[i].strike)
+      pricesCall.push(optionsJSON[stockData[k].name].call[i].price*100)
     }
-    for (i=0; i<optionsJSON[cities[k].name].put.length; i++){
-      strikesPut.push(optionsJSON[cities[k].name].put[i].strike)
-      pricesPut.push(optionsJSON[cities[k].name].put[i].price*100)
+    for (i=0; i<optionsJSON[stockData[k].name].put.length; i++){
+      strikesPut.push(optionsJSON[stockData[k].name].put[i].strike)
+      pricesPut.push(optionsJSON[stockData[k].name].put[i].price*100)
     }
     // Join the put and call prices in one array
     prices = pricesCall.concat(pricesPut);
@@ -1328,7 +1362,7 @@ d3.json("finalData.json", function(error, data) {
 
     // Create the call bar charts
     chart1.selectAll(".bar")
-        .data(optionsJSON[cities[k].name].call)
+        .data(optionsJSON[stockData[k].name].call)
       .enter().append("rect")
         .attr("class", "bar")
         .attr("y", function(d) {return ybar1(d.strike); })
@@ -1339,14 +1373,16 @@ d3.json("finalData.json", function(error, data) {
           // Edit the visibility of the inputs and the text beside them
           document.getElementById("optCounterPut").style.visibility = "hidden"
           document.getElementById("optCounterCall").style.visibility = "visible"
-          document.getElementById("optTypeCall").innerHTML = "Buy call option with strike $" 
-                                  +d.strike +" for a price of $" +formatValue(d.price*100)
+          document.getElementById("optTypeCall").innerHTML = 
+          "Buy call option with strike $" +d.strike +" for a price of $" 
+          +formatValue(d.price*100)
+
           // Amount of options is zero if the option is not in the dict
           if (allData[k][d.strike+"c"] === undefined) {
               document.getElementById("numCall").value = 0
-          // Amount of options is equal to the first element of the array in the dict
+          // Amount of options = the first element of the array in the dict
            } else {
-            document.getElementById("numCall").value = allData[k][d.strike+"c"][0]
+            document.getElementById("numCall").value=allData[k][d.strike+"c"][0]
            }
            // Set this option info to the variable 
           optionInfo = d
@@ -1357,7 +1393,7 @@ d3.json("finalData.json", function(error, data) {
 
     // Create the put bar charts
     chart2.selectAll(".bar2")
-        .data(optionsJSON[cities[k].name].put)
+        .data(optionsJSON[stockData[k].name].put)
       .enter().append("rect")
         .attr("class", "bar2")
         .attr("y", function(d) {return ybar2(d.strike); })
@@ -1365,19 +1401,24 @@ d3.json("finalData.json", function(error, data) {
         .attr("x", 1)
         .attr("width", function(d) {return xbar(d.price*100); })
         .on("click", function(d,i) {
-         // Edit the visibility of the inputs and the text beside them
-         document.getElementById("optCounterCall").style.visibility = "hidden"
-         document.getElementById("optCounterPut").style.visibility = "visible"
-         document.getElementById("optTypePut").innerHTML = "Buy put option with strike $" +d.strike +" for a price of $" +formatValue(d.price*100)
-         // Amount of options is zero if the option is not in the dict
-         if (allData[k][d.strike+"p"] === undefined) {
-          document.getElementById("numPut").value = 0
-          // Amount of options is equal to the first element of the array in the dict
-         } else {
-          document.getElementById("numPut").value = allData[k][d.strike+"p"][0]
-         }
-         // Set this option info to the variable
-         optionInfo = d
+
+          // Edit the visibility of the inputs and the text beside them
+          document.getElementById("optCounterCall").style.visibility = "hidden"
+          document.getElementById("optCounterPut").style.visibility = "visible"
+          document.getElementById("optTypePut").innerHTML = 
+          "Buy put option with strike $" +d.strike +" for a price of $" 
+          +formatValue(d.price*100)
+
+          // Amount of options is zero if the option is not in the dict (undef)
+          if (allData[k][d.strike+"p"] === undefined) {
+            document.getElementById("numPut").value = 0
+          // Amount of options: the first element of the array in the dict
+          } else {
+            document.getElementById("numPut").value = allData[k][d.strike+"p"][0]
+          }
+
+          // Set this option info to the variable
+          optionInfo = d
         })
         .style("opacity", 0)
         .transition().duration(1000)
@@ -1422,7 +1463,7 @@ d3.json("finalData.json", function(error, data) {
     // x axis call options
     chart1.append("g")
           .attr("class", "x axis")
-          .attr("transform", "translate(0," + heightbar + ")")
+          .attr("transform", "translate(0," + heightBar + ")")
           .call(xAxisbar)
           .style("opacity", 0)
           .transition().duration(1000)
@@ -1431,7 +1472,7 @@ d3.json("finalData.json", function(error, data) {
     // x axis put options
     chart2.append("g")
           .attr("class", "x axis")
-          .attr("transform", "translate(0," + heightbar + ")")
+          .attr("transform", "translate(0," + heightBar + ")")
           .call(xAxisbar)
           .style("opacity", 0)
           .transition().duration(1000)
@@ -1451,18 +1492,23 @@ d3.json("finalData.json", function(error, data) {
     .attr("type", "range")
     .attr("min", -5)
     .attr("max", 5)
-    .attr("value", thisAmount[k]/5)
+    .attr("value", function() {
+      if (allData[k]["shares"] !== undefined) {
+        return allData[k]["shares"][0]/5
+      } else {return 0}
+    }) 
     .style("visibility", "visible")
     .text("works?")
     .on("change", function() {
       // Set the share data and call the functions
       allData[k]["shares"] = [this.value*5, ""]
+      investButton = false
       payoffLegendName()
       payoffResult()
       moneyLeft()
       // Set the amount of shares beside the slider
       if (allData[k]["shares"] !== undefined) {
-        document.getElementById("shareSlider").innerHTML =  this.value*5 +" shares"
+        document.getElementById("shareSlider").innerHTML=this.value*5 +" shares"
       }
     });
   }
@@ -1475,21 +1521,22 @@ d3.json("finalData.json", function(error, data) {
   function brushedx() {
     // Set the main x domain to the brushed domain
     x.domain(brushx.empty() ? x2.domain() : brushx.extent());
+
     // Transition back to normal if the brush is empty
     if (brushx.empty()) {
       main.select(".x.axis")
           .transition().duration(1000)
           .call(xAxis);
-      for (i = 0; i<cities.length; i++) {
-        main.select("#"+cities[i].name)
+      for (i = 0; i<stockData.length; i++) {
+        main.select("#"+stockData[i].name)
             .transition().duration(1000)
             .attr("d", function(d){return line1(d.values)});
       };
     //Edit the main graph to the extent of the brush
     } else {
         main.select(".x.axis").call(xAxis);
-        for (i = 0; i<cities.length; i++) {
-          main.select("#"+cities[i].name)
+        for (i = 0; i<stockData.length; i++) {
+          main.select("#"+stockData[i].name)
               .attr("d", function(d){return line1(d.values)});
         };
     }
@@ -1504,180 +1551,215 @@ d3.json("finalData.json", function(error, data) {
       main.select(".y.axis")
           .transition().duration(1000)
           .call(yAxis);
-      for (i = 0; i<cities.length; i++) {
-        main.select("#"+cities[i].name)
+      for (i = 0; i<stockData.length; i++) {
+        main.select("#"+stockData[i].name)
             .transition().duration(1000)
             .attr("d", function(d){return line1(d.values)});
       };
     // Edit the main graph to the extent of the brush
     } else {
       main.select(".y.axis").call(yAxis);
-      for (i = 0; i<cities.length; i++) {
-        main.select("#"+cities[i].name).attr("d", function(d){return line1(d.values)});
+      for (i = 0; i<stockData.length; i++) {
+        main.select("#"+stockData[i].name).attr("d", function(d){
+                                                  return line1(d.values)});
       };
     }
   }
 
 // ------------------------------------------------------------------
-// Strats NOT FUNCTIONAL YET!!!!!
+// Strategies
 // ------------------------------------------------------------------
     
     function bullSpread() {
+      // clear all previous inputs and set variables
       clearInput()
       investButton = false
       checked_boxes[k] = 0
       allData[k] = {}
-        difference = 10000
-        for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
-          thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].call[i].strike)
-          if (thisDifference < difference) {
-            difference = thisDifference
-            longStrike = optionsJSON[cities[k].name].call[i].strike
-            longPrice = optionsJSON[cities[k].name].call[i].price
-          }
-          if (i == optionsJSON[cities[k].name].call.length-1) {
-            shortStrike = optionsJSON[cities[k].name].call[i].strike
-            shortPrice = optionsJSON[cities[k].name].call[i].price
-            allData[k][shortStrike+"c"] = [-1, shortPrice*100]
-          }
 
-        }
+      // Get the index for the ATM option
+      index = getIndexCall()
+
+      // Set the prices and strikes for the options in the spread
+      lengthCall = optionsJSON[stockData[k].name].call.length
+      longStrike = optionsJSON[stockData[k].name].call[index].strike
+      longPrice = optionsJSON[stockData[k].name].call[index].price
+      shortStrike = optionsJSON[stockData[k].name].call[lengthCall-1].strike
+      shortPrice = optionsJSON[stockData[k].name].call[lengthCall-1].price
+
+      // Add the options to the data variable
       allData[k][longStrike+"c"] = [1, longPrice*100]
+      allData[k][shortStrike+"c"] = [-1, shortPrice*100]
+
+      // Edit the slider, payoff legend, results, money and slider text
       editSlider()
       payoffLegendName()
       payoffResult()
       moneyLeft()
+      sliderText()
     }
 
+//------------------------------------------------------------------------------
+
     function bearSpread() {
+      // clear all previous inputs and set variables
       clearInput()
       investButton = false
       checked_boxes[k] = 1
       allData[k] = {}
-      difference = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].call[i].strike)
-        if (thisDifference < difference) {
-          difference = thisDifference
-          longStrike = optionsJSON[cities[k].name].call[i].strike
-          longPrice = optionsJSON[cities[k].name].call[i].price
-        }
-        if (i == 0) {
-          shortStrike = optionsJSON[cities[k].name].call[i].strike
-          shortPrice = optionsJSON[cities[k].name].call[i].price
-          allData[k][shortStrike+"c"] = [-1, shortPrice*100]
-        }
-      }
+      
+      // Get the index for the ATM option
+      index = getIndexCall()
+
+      // Set the prices and strikes for the options in the spread
+      shortStrike = optionsJSON[stockData[k].name].call[0].strike
+      shortPrice = optionsJSON[stockData[k].name].call[0].price
+      longStrike = optionsJSON[stockData[k].name].call[index].strike
+      longPrice = optionsJSON[stockData[k].name].call[index].price
+
+      // Add the options to the data variable
+      allData[k][shortStrike+"c"] = [-1, shortPrice*100]
       allData[k][longStrike+"c"] = [1, longPrice*100]
+
+      // Edit the slider, payoff legend, results, money and slider text
       editSlider()
       payoffLegendName()
       payoffResult()
       moneyLeft()
+      sliderText()
     }
-
+//------------------------------------------------------------------------------
     function backSpread() {
+      // clear all previous inputs and set variables
       clearInput()
       investButton = false
       checked_boxes[k] = 2
       allData[k] = {}
-      difference = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].call[i].strike)
-        if (thisDifference < difference) {
-          difference = thisDifference
-          shortIndex = i
-        }
-      }
-      if (k == 0) {shortIndex += 1}
 
-      shortStrike = optionsJSON[cities[k].name].call[shortIndex-1].strike
-      shortPrice = optionsJSON[cities[k].name].call[shortIndex-1].price
-      longPrice1 = optionsJSON[cities[k].name].call[shortIndex+1].price
-      longStrike1 = optionsJSON[cities[k].name].call[shortIndex+1].strike
+      // Get the index for the ATM option
+      index = getIndexCall()
+      // Amazon different
+      if (k == 0) {index += 1}
 
+      // Set the prices and strikes for the options in the spread
+      shortStrike = optionsJSON[stockData[k].name].call[index-1].strike
+      shortPrice = optionsJSON[stockData[k].name].call[index-1].price
+      longPrice1 = optionsJSON[stockData[k].name].call[index+1].price
+      longStrike1 = optionsJSON[stockData[k].name].call[index+1].strike
+
+      // Add the options to the data variable
       allData[k][shortStrike+"c"] = [-1, shortPrice*100]
       allData[k][longStrike1+"c"] = [2, longPrice1*100]
+
+      // Edit the slider, payoff legend, results, money and slider text
       editSlider()
       payoffLegendName()
       payoffResult()
       moneyLeft()
+      sliderText()
     }
-
+//------------------------------------------------------------------------------
     function strangleSpread() {
+      // clear all previous inputs and set variables
       clearInput()
       investButton = false
       checked_boxes[k] = 4
       allData[k] = {}
-      differenceCall = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].call[i].strike)
-        if (thisDifference < differenceCall) {
-          differenceCall = thisDifference
-          longStrikeCall = optionsJSON[cities[k].name].call[i].strike
-          longPriceCall = optionsJSON[cities[k].name].call[i].price
-        }
-      }
-      differencePut = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].put.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].put[i].strike)
-        if (thisDifference < differencePut) {
-          differencePut = thisDifference
-          longStrikePut = optionsJSON[cities[k].name].put[i].strike
-          longPricePut = optionsJSON[cities[k].name].put[i].price
-        }
-      }
+
+      // Get the index for the ATM call and put option
+      indexCall = getIndexCall()
+      indexPut = getIndexPut()
+
+      // Set the prices and strikes for the options in the spread
+      longStrikeCall = optionsJSON[stockData[k].name].call[indexCall].strike
+      longPriceCall = optionsJSON[stockData[k].name].call[indexCall].price
+      longStrikePut = optionsJSON[stockData[k].name].put[indexPut].strike
+      longPricePut = optionsJSON[stockData[k].name].put[indexPut].price
+
+      // Add the options to the data variable
       allData[k][longStrikeCall+"c"] = [1, longPriceCall*100]
       allData[k][longStrikePut+"p"] = [1, longPricePut*100]
+
+      // Edit the slider, payoff legend, results, money and slider text
       editSlider()
       payoffLegendName()
       payoffResult()
       moneyLeft()
+      sliderText()
     }
-
+//------------------------------------------------------------------------------
     function ironSpread() {
+      // clear all previous inputs and set variables
       clearInput()
       investButton = false
       checked_boxes[k] = 3
       allData[k] = {}
-      differenceCall = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].call.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].call[i].strike)
-        if (thisDifference < differenceCall) {
-          differenceCall = thisDifference
-          callButterflyIndex = i
-        }
-      }
 
-      differencePut = 10000
-      for (i = 0; i < optionsJSON[cities[k].name].put.length; i++){
-        thisDifference = Math.abs(thisPrice[k] - optionsJSON[cities[k].name].put[i].strike)
-        if (thisDifference < differencePut) {
-          differencePut = thisDifference
-          putButterflyIndex = i
-        }
-      }
+       // Get the index for the ATM call and put option
+      callButterflyIndex = getIndexCall()
+      putButterflyIndex = getIndexPut()
+
+      // Costco different
       if (k == 3) {
         callButterflyIndex -=1
         putButterflyIndex -=1
       }
-      callPrice1 = optionsJSON[cities[k].name].call[callButterflyIndex].price
-      callStrike1 = optionsJSON[cities[k].name].call[callButterflyIndex].strike
-      callPrice2 = optionsJSON[cities[k].name].call[callButterflyIndex+2].price
-      callStrike2 = optionsJSON[cities[k].name].call[callButterflyIndex+2].strike
 
-      putPrice1 = optionsJSON[cities[k].name].put[putButterflyIndex].price
-      putStrike1 = optionsJSON[cities[k].name].put[putButterflyIndex].strike
-      putPrice2 = optionsJSON[cities[k].name].put[putButterflyIndex-2].price
-      putStrike2 = optionsJSON[cities[k].name].put[putButterflyIndex-2].strike
+      // Set the prices and strikes for the options in the spread
+      callPrice1 = optionsJSON[stockData[k].name].call[callButterflyIndex].price
+      callStrike1 = optionsJSON[stockData[k].name].call[callButterflyIndex].strike
+      callPrice2 = optionsJSON[stockData[k].name].call[callButterflyIndex+2].price
+      callStrike2 = optionsJSON[stockData[k].name].call[callButterflyIndex+2].strike
 
+      putPrice1 = optionsJSON[stockData[k].name].put[putButterflyIndex].price
+      putStrike1 = optionsJSON[stockData[k].name].put[putButterflyIndex].strike
+      putPrice2 = optionsJSON[stockData[k].name].put[putButterflyIndex-2].price
+      putStrike2 = optionsJSON[stockData[k].name].put[putButterflyIndex-2].strike
+
+      // Add the options to the data variable
       allData[k][callStrike1+"c"] = [-1, callPrice1*100]
       allData[k][callStrike2+"c"] = [1, callPrice2*100]
       allData[k][putStrike1+"p"] = [-1, putPrice1*100]
       allData[k][putStrike2+"p"] = [1, putPrice2*100]
+
+      // Edit the slider, payoff legend, results, money and slider text
       editSlider()
       payoffLegendName()
       payoffResult()
       moneyLeft()
+      sliderText()
+    }
+
+    function getIndexCall() {
+      // Find the smallest difference between stock and strike prices
+      difference = 10000
+      for (i = 0; i < optionsJSON[stockData[k].name].call.length; i++){
+        thisDifference = Math.abs(thisPrice[k] - 
+                                  optionsJSON[stockData[k].name].call[i].strike)
+        // If difference is smaller, this is the new index
+        if (thisDifference < difference) {
+          difference = thisDifference
+          index = i
+        }
+      }
+      // return the index
+      return index
+    }
+
+    function getIndexPut() {
+      // Find the smallest difference between stock and strike prices
+      difference = 10000
+      for (i = 0; i < optionsJSON[stockData[k].name].put.length; i++){
+        thisDifference = Math.abs(thisPrice[k] - 
+                                  optionsJSON[stockData[k].name].put[i].strike)
+        // If difference is smaller, this is the new index
+        if (thisDifference < difference) {
+          difference = thisDifference
+          index = i
+        }
+      }
+      // return the index
+      return index
     }
 
 // ------------------------------------------------------------------
@@ -1685,11 +1767,13 @@ d3.json("finalData.json", function(error, data) {
 // ------------------------------------------------------------------
   
   function moneyLeft() {
+    // Recalculate the total investment starting at 10K
     totalInvestment = 10000
-    // for each stock
+
+    // Loop over all stocks and all elements in the stock
     for (i = 0; i < allData.length; i++) {
-    // for each element in the stock
       for (j = 0; j < Object.keys(allData[i]).length; j++) {
+        // Add something different if they are shares
         if (Object.keys(allData[i])[j] == "shares") {
           totalInvestment -= allData[i][Object.keys(allData[i])[j]][0]*thisPrice[i]
         } else {
@@ -1699,107 +1783,155 @@ d3.json("finalData.json", function(error, data) {
       }
     }
     // Set the amout of money left on the HTML page
-    document.getElementById("money").innerHTML = "Money left: $" + formatValue(totalInvestment)
+    document.getElementById("money").innerHTML = 
+                                  "Money left: $" + formatValue(totalInvestment)
   }
 
 // ------------------------------------------------------------------
 // Investment results
 // ------------------------------------------------------------------
 
-  // Results 
   function results() {
-    // find the key of profit list
-    prof = 0
-    resultTest = ""
-    for (i = 0; i < cities.length; i++) {
-      stockName = cities[i].name
-      if (payoffData[i].length !== 0) {
-        if (GBM === true) {
-          finalKey = Math.round(GBMPrice[i] - thisPrice[i]+30)
+    // Calculates the profits given an end date. Only if we have money
+    if (totalInvestment > 0) {
+      // Set variables
+      prof = 0
+      resultTest = ""
+
+      // Loop through all stocks
+      for (i = 0; i < stockData.length; i++) {
+        stockName = stockData[i].name
+
+        // Check if we invested in the stock
+        if (payoffData[i].length !== 0) {
+          // Find the key for associated with the new price
+          if (GBM === true) {
+            finalKey = Math.round(GBMPrice[i] - thisPrice[i]+30)
+          } else {
+            finalKey = Math.round(lastPrice[i] - thisPrice[i]+30)
+          }
+          // Get the profit associated with the new price via the key
+          stockResult = payoffData[i][payoffData[i].length-1][finalKey].price
+          prof += stockResult
+          resultTest += stockName +": " +formatCurrency(stockResult) + "\n"
+
+        // No investments, so no profits
         } else {
-          finalKey = Math.round(lastPrice[i] - thisPrice[i]+30)
+          resultTest += stockName +": $ 0.00 \n"
         }
-        stockResult = payoffData[i][payoffData[i].length-1][finalKey].price
-        prof += stockResult
-        resultTest += stockName +": " +formatCurrency(stockResult) + "\n"
+      }
+      // Different outputs for for profit or loss
+      if (prof >= 0) {
+        resultTest += "You made a PROFIT of " +formatCurrency(prof)
+        alert(resultTest)
       } else {
-        resultTest += stockName +": $ 0.00 \n"
+        prof = -prof
+        resultTest += "You made a LOSS of " +formatCurrency(prof)
+        alert(resultTest)
       }
+      // Boolean variable for the investment line in the payoff graph, plot it
+      investButton = true
+      payoffResult()
+      // Go-to results are the market prices, not the simulated prices
+      GBM = false
     }
-    if (prof >= 0) {
-      resultTest += "You made a PROFIT of " +formatCurrency(prof)
-      alert(resultTest)
-    } else {
-      prof = -prof
-      resultTest += "You made a LOSS of " +formatCurrency(prof)
-      alert(resultTest)
-    }
-    investButton = true
-    payoffResult()
-    GBM = false
   }
 
+  // Simulates stock prices according to a Geometric Brownian Motion (GBM)
   function GBMresults() {
-    GBMPrice = []
-    sigma = 0.5*Math.random()
-    mu = 0.5*Math.random()
-    for (l = 0; l<cities.length; l++) {
-      So = thisPrice[l]
-      dt = (14/252)/1000
-      for (i=0; i<1000; i++) {
-        So *= Math.exp((mu - 0.5*sigma*sigma)*dt + sigma*eps()*Math.sqrt(dt))
+    // Calculates the profits given an end date. Only if we have money
+    if (totalInvestment > 0) {
+      // Set the variables (market variables so same for all stocks)
+      GBMPrice = []
+      sigma = 0.5*Math.random()
+      mu = 0.5*Math.random()
+
+      // Simulate paths for each stock
+      for (l = 0; l<stockData.length; l++) {
+        So = thisPrice[l]
+        dt = (14/252)/1000
+        for (i=0; i<1000; i++) {
+          So *= Math.exp((mu - 0.5*sigma*sigma)*dt + sigma*eps()*Math.sqrt(dt))
+        }
+        // Must lie between -30 +S0 <ST< 30 + S0 
+        So = d3.max([So,thisPrice[l]-30])
+        So = d3.min([So,thisPrice[l]+30])
+        // Add the simuation result to the array
+        GBMPrice.push(So)
       }
-      So = d3.max([So,thisPrice[l]-30])
-      So = d3.min([So,thisPrice[l]+30])
-      GBMPrice.push(So)
+      // Go-to results are market prices, set them to GBM prices. Call results
+      GBM = true
+      results()
     }
-    GBM = true
-    results()
   }
 
+  // Funtion which gets called when puts are changed
   function optGraphPut() {
-    // Set the amount of put options of specific strike in the data list
+    //Get the amount of options for the selected put and add it to the data dict
     amountOpts = document.getElementById("numPut").value
     allData[k][optionInfo.strike+"p"] = [amountOpts, optionInfo.price*100]
+
+    // Remove the result line in the payoff graph and call functions
+    investButton = false
     payoffResult()
     payoffLegendName()
     moneyLeft()
   }
 
+  // Funtion which gets called when calls are changed
   function optGraphCall() {
-    // Set the amount of call options of specific strike in the data list
+    //Get the amount of options for the selected put and add it to the data dict
     amountOpts = document.getElementById("numCall").value
     allData[k][optionInfo.strike+"c"] = [amountOpts, optionInfo.price*100]
+
+    // Remove the result line in the payoff graph and call functions
+    investButton = false
     payoffResult()
     payoffLegendName()
     moneyLeft()
   }
 
+  // Function that removes all the information
   function clearAll() {
+    // Set the input type value to zero, set the data to empty dicts
     clearInput()
     allData = [{},{},{},{},{},{},{},{}]
+    // All radio buttons for each stock must have no value
+    // If this isn't done it will light up the previous checked radio button
     checked_boxes = [-1,-1,-1,-1,-1,-1,-1,-1]
+
+    // Uncheck radio buttons and call all relevant functions
     unCheckBoxes()
+    investButton = false
     editSlider()
     payoffResult()
     payoffLegendName()
     moneyLeft()
-    investButton = false
+    sliderText()
+
+    // Set the amount of shares to zero
     document.getElementById("shareSlider").innerHTML =  0 +" shares"
   }
 
   function clearStock() {
+    // Set the input type value to zero and call all relevant functions
+    investButton = false
     clearInput()
     allData[k] = {}
+    checked_boxes[k] = -1
     unCheckBoxes()
     editSlider()
     payoffResult()
     payoffLegendName()
     moneyLeft()
+    sliderText()
+
+    // Set the amount of shares to zero
     document.getElementById("shareSlider").innerHTML =  0 +" shares"
   }
 
   function clearInput() {
+    // Set the values to zero for when we clear a stock 
     document.getElementById("numPut").value = 0
     document.getElementById("numCall").value = 0
   }
@@ -1809,6 +1941,7 @@ d3.json("finalData.json", function(error, data) {
 // ------------------------------------------------------------------  
 
   function tour() {
+    // Set the About, term and information boxes to hidden
     document.getElementById("terms").style.visibility = "hidden"
     if (numAbout !== 0) {
       document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
@@ -1816,33 +1949,43 @@ d3.json("finalData.json", function(error, data) {
     if (numInfo !== 0 ) {
       document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
     }
-    remember = allData[k]
-    allData[k] = {}
+    // Remember the data we are using, then set the data to zero for examples
+    remember = allData
+    allData = [{},{},{},{},{},{},{},{}]
+
+    // Dim the screen, set the number of the tour to zero
     d3.select("svg").style("opacity", 0.6)
     numtour = 0
+
     // If somebody presses the tour when there is already a tour in progress
     for (i=0; i<10; i++){
       document.getElementById("help_"+i).style.visibility = "hidden"
     }
+
+    // Call the next section of the tour
     tour2()
   }
 
   function tour2() {
+    // Tour ends if we are at number 10
     if (numtour == 10) {
       tour3()
+    // We have to remove the prevous tours, but only if it isn't the first
     } else {
       if (numtour != 0) {
         document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
       }
-
+      // If the tour is at 3 we want the user to click a stock if he hasn't yet
       if (numtour == 3) {
-        tourStockName = cities[k].name
+        // Set the name of the stock we have selected
+        tourStockName = stockData[k].name
         if (tourStockName === "RalphLauren") {
           tourStockName = "Ralph Lauren"
         } else if (tourStockName === "MasterCard") {
           tourStockName = "Master Card"
         }
         document.getElementById("tourName").innerHTML = tourStockName
+        // If no stock is active you cannot press the next button
         tester = 0
         for (i = 0; i < activeStock.length; i++){
           tester += activeStock[i]
@@ -1851,8 +1994,10 @@ d3.json("finalData.json", function(error, data) {
           numtour -= 1
         }
       }
+      // Set the current box to visible
       document.getElementById("help_"+numtour).style.visibility = "visible"
 
+      // Share example, with relevant functions
       if (numtour == 7) {
         thisAmount[k] = 4
         editSlider()
@@ -1861,37 +2006,54 @@ d3.json("finalData.json", function(error, data) {
         payoffLegendName()
         moneyLeft()
       }
+
+      // Spread example, with relevant functions
       if (numtour == 8) {
         document.getElementById("bull").checked = true
         bullSpread()
         payoffLegendName()
       }
+
+      // Single option example, with relevant functions
       if (numtour == 9) {
         document.getElementById("bull").checked = false
         document.getElementById("optCounterCall").style.visibility = "visible"
         allData[k] = {}
-        tourStrike = optionsJSON[cities[k].name].call[0].strike
-        tourPrice = optionsJSON[cities[k].name].call[0].price
+        tourStrike = optionsJSON[stockData[k].name].call[0].strike
+        tourPrice = optionsJSON[stockData[k].name].call[0].price
         allData[k][tourStrike +"c"] = [2, tourPrice*100]
         payoffResult()
         payoffLegendName()
       }
 
+      // Next tour box
       numtour += 1
       }
   }
   
   function tour3(){
-      d3.select("svg").style("opacity", 1)
-      allData[k] = remember
-      document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
-      document.getElementById("optCounterCall").style.visibility = "hidden"
-      payoffResult()
-      payoffLegendName()
-      editSlider()
+    // Function to end the tour
+    // Set the svg and previous data back to normal
+    d3.select("svg").style("opacity", 1)
+    allData = remember
+
+    // Last tour box must go away, and also the option input
+    document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
+    document.getElementById("optCounterCall").style.visibility = "hidden"
+
+    // Set the tour to zero and call all relevant functiona
+    numtour = 0
+    payoffResult()
+    payoffLegendName()
+    editSlider()
   }
 
+// ------------------------------------------------------------------
+// Information about the visualisation
+// ------------------------------------------------------------------ 
+
   function about() {
+    // Set the tour, term and information boxes to hidden
     document.getElementById("terms").style.visibility = "hidden"
     if (numtour !== 0) {
       document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
@@ -1899,14 +2061,25 @@ d3.json("finalData.json", function(error, data) {
     if (numInfo !==0 ) {
       document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
     }
+
+    // Dim the svg
     d3.select("svg").style("opacity", 0.6)
     numAbout = 1
+
+    // If somebody presses about when it is allready in progress
+    for (i=1; i<3; i++){
+      document.getElementById("about_"+i).style.visibility = "hidden"
+    }
+
+    // Call the next function
     about2()
   }
 
   function about2() {
+    // End if the number is 4
     if (numAbout === 4) {
       about3()
+    // We have to remove the prevous abouts, but only if it isn't the first
     } else {
       if (numAbout != 1) {
         document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
@@ -1917,11 +2090,17 @@ d3.json("finalData.json", function(error, data) {
   }
 
   function about3() {
+    // Hide the last box and set the svg to normal
     document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
     d3.select("svg").style("opacity", 1)
   }
 
+// ------------------------------------------------------------------
+// Information about options
+// ------------------------------------------------------------------ 
+
   function info() {
+    // Set the tour, term and about boxes to hidden
     document.getElementById("terms").style.visibility = "hidden"
     document.getElementById("strats").style.visibility = "visible"
     if (numtour !== 0) {
@@ -1930,14 +2109,17 @@ d3.json("finalData.json", function(error, data) {
     if (numAbout !== 0) {
       document.getElementById("about_"+(numAbout-1)).style.visibility = "hidden"
     }
+    // Dim the svg call the next part of the info
     d3.select("svg").style("opacity", 0.6)
     numInfo = 1
     info2()
   }
 
   function info2() {
+    // End if info is at number 7
     if (numInfo === 7) {
       info3()
+    // We have to remove the prevous infos, but only if it isn't the first
     } else {
       if (numInfo != 1) {
         document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
@@ -1948,13 +2130,21 @@ d3.json("finalData.json", function(error, data) {
   }
 
   function info3() {
+    // End the information, set the last box to hidden and svg to normal
     document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
     d3.select("svg").style("opacity", 1)
   }
 
+// ------------------------------------------------------------------
+// Term information
+// ------------------------------------------------------------------ 
+
   function termFun() {
+    // Dim svg and make the term box visible
     d3.select("svg").style("opacity", 0.6)
     document.getElementById('terms').style.visibility = 'visible'
+
+    // Set all irrelevant boxes to hidden
     if (numtour !== 0) {
       document.getElementById("help_"+(numtour-1)).style.visibility = "hidden"
     }
@@ -1965,18 +2155,42 @@ d3.json("finalData.json", function(error, data) {
       document.getElementById("info_"+(numInfo-1)).style.visibility = "hidden"
     }
   }
+
   function termEnd() {
+    // End the terms, set the last box to hidden and svg to normal
     document.getElementById('terms').style.visibility = 'hidden'
     d3.select("svg").style("opacity", 1)
   }
 
+// ------------------------------------------------------------------
+// Text behind the slider
+// ------------------------------------------------------------------ 
+
+  function sliderText() {
+    // Set text behind the slider to the amount if the entry in the dict exists
+    if (allData[k]["shares"] !== undefined) {
+      document.getElementById("shareSlider").innerHTML = 
+      allData[k]["shares"][0] +" shares"
+    // Set it to zero if there is no entry in the dict
+    } else {
+      document.getElementById("shareSlider").innerHTML = 
+      0 +" shares"
+    }
+  }
+
+// ------------------------------------------------------------------
+// Section regarding checking and unchecking the boxes
+// ------------------------------------------------------------------ 
+
   function unCheckBoxes() {
+    // Uncheck all the radio buttons
     boxes = document.getElementsByName("strategy")
     for (l=0; l<boxes.length; l++){
         boxes[l].checked = false
     }
 
   window.checkBoxes = function() {
+    // Check the radio button
     boxes = document.getElementsByName("strategy")
     boxes[checked_boxes[k]].checked = true
   }
@@ -1987,107 +2201,219 @@ d3.json("finalData.json", function(error, data) {
 }
 </script>
 <div id="about_1" class="box">
-<p>Hello and welcome to my visualisation! Many first time investors hear stories about people who gain large amounts of money by investing in the stock market. Usually these people invest in options and not in shares. But without a good view of what options really are, they can be a very dangerous investment. As a result, many people who randomly invest in options lose their entire investment. <br> For this visualisation you will be able to invest in options or shares. Click the next button to read about what shares and options really are, visit the tour to find out how my visualisation works, visit the option info to find information about the strategies that are available or visit the terms tab for often used abbreviations.</p>
-<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
+<p>Hello and welcome to my visualisation! Many first time investors hear stories
+ about people who gain large amounts of money by investing in the stock market. 
+ Usually these people invest in options and not in shares. But without a good 
+ view of what options really are, they can be a very dangerous investment. As a 
+ result, many people who randomly invest in options lose their entire 
+ investment. <br> For this visualisation you will be able to invest in options 
+ and shares. Click the next button to read about what shares and options really 
+ are, visit the tour to find out how my visualisation works, visit the option 
+ info to find information about the strategies that are available or visit the 
+ terms tab for often used abbreviations.</p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" 
+   class="exitBut"/>X</a></span>
 </div>
 
 <div id="about_2" class="box">
-<p>A share is a unit of ownership in a corporation or financial asset. Thus, if you own a share of Apple, you "own" part Apple. Although you don't have direct control over buisiness operations, you are entitled to an equal distribution of the profits, in the form of dividend. Many people who invest in shares seek to obtain profit in two possible ways:<br> 1. Price differences of the shares between buying and selling them <br> 2. Profits obtained from dividends. <br> In this visualisation profit can be obtained from the first way. Your profit will be shown as <b># Stocks * (ST - S0)</b> where <b>ST</b> is the stock price at time of selling and <b>S0</b> that of buying. <br> The next section will explain options. </p>
-<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
+<p>A share is a unit of ownership in a corporation or financial asset. Thus, 
+  if you own a share of Apple, you "own" part Apple. Although you don't have 
+  direct control over buisiness operations, you are entitled to an equal 
+  distribution of the profits, in the form of dividend. Many people who invest 
+  in shares seek to obtain profit in two possible ways:<br> 1. Price differences
+  of the shares between buying and selling them <br> 2. Profits obtained from 
+  dividends. <br> In this visualisation profit can be obtained from the first 
+  way. Your profit will be shown as <b># Stocks * (ST - S0)</b> where <b>ST</b>
+  is the stock price at time of selling and <b>S0</b> that of buying. <br> 
+  The next section will explain options. </p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" 
+   class="exitBut"/>X</a></span>
 </div>
 
 <div id="about_3" class="box">
-<p>As mentioned previously, options can be a dangerous investment. In this visualisation I look into two different options: Call and Put options. A call (put) option gives the holder the right, but not the obligation, to enter into a contract to buy (sell) 100 shares for a predetermined price, called the strike price (K), and date, called the expiration date. <br> What makes this way of investing dangerous, is that if the price at expiration date of a call (put) is lower (higher) than the strike price, the buyer loses all his investment! Your profit will be shown as <b>100 * max(ST-K,0) - price</b> for calls and <b>100 * max(K-ST,0) - price</b> for puts.</p>
-<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" class="exitBut"/>X</a></span>
+<p>As mentioned previously, options can be a dangerous investment. In this 
+  visualisation I look into two different options: Call and Put options. A call 
+  (put) option gives the holder the right, but not the obligation, to enter into 
+  a contract to buy (sell) 100 shares for a predetermined price, called the 
+  strike price (K), and date, called the expiration date. <br> What makes this 
+  way of investing dangerous, is that if the price at expiration date of a call 
+  (put) is lower (higher) than the strike price, the buyer loses all his 
+  investment! Your profit will be shown as <b>100 * max(ST-K,0) - price</b> for 
+  calls and <b>100 * max(K-ST,0) - price</b> for puts.</p>
+<a onclick="about2()" class="nextBut"/>Next</a> <span><a onclick="about3()" 
+   class="exitBut"/>X</a></span>
 </div>
 
   <div id="help_0" class="bubble1">
-    <p>Hello, and welcome to the tour of my visualisation.<br> I advise all of you to first look at the "about" button before going through the tour! If you have, or dont feel like it, then press the "next" button!</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>Hello, and welcome to the tour of my visualisation.<br> I advise all of 
+      you to first look at the "about" button before going through the tour! If 
+      you have, or dont feel like it, then press the "next" button!</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_1" class="bubble">
-    <p>The first main thing we notice is the stock graph. Here we can see stock quotes from previous dates and may help you in choosing you investment type and amount. </p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>The first main thing we notice is the stock graph. Here we can see stock 
+      quotes from previous dates and may help you in choosing you investment 
+      type and amount. </p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_2" class="bubble2">
-    <p>The legend is the drive of this visualisation. By clicking on one of the legend names the line for this stock will light up, and you can invest in this stock. Give it a try if you haven't yet!</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>The legend is the drive of this visualisation. By clicking on one of the 
+      legend names the line for this stock will light up, and you can invest in 
+      this stock. Give it a try if you haven't yet!</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_3" class="bubble">
-    <p>You chose <span id="tourName"></span>, great choice!<br> Past dates may distort your preferred viewing, try zooming in by clicking and dragging either this horizontal or vertical section</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>You chose <span id="tourName"></span>, great choice!<br> Past dates may 
+      distort your preferred viewing, try zooming in by clicking and dragging 
+      either this horizontal or vertical section</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
     <div id="help_4" class="bubble2">
-    <p>For reference, here we find the selected stock, our remaining investment, the current price of the selected stock and finally a button for when you want to finalize your investment.</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>For reference, here we find the selected stock, our remaining 
+      investment, the current price of the selected stock and finally a button 
+      for when you want to finalize your investment.</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_5" class="bubble">
-    <p>Here we see the payoff graph. After investing in either shares or options of a specific stock, the dotted lines will show their profit. More importantly, the solid line will show their combined profit. Hover over the section to observe the total profit! We will see this payoff graph in action in the comming steps. <br>Note: Only 5 lines will be shown!</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>Here we see the payoff graph. After investing in either shares or options 
+      of a specific stock, the dotted lines will show their profit. More 
+      importantly, the solid line will show their combined profit. Hover over 
+      the section to observe the total profit! We will see this payoff graph in 
+      action in the comming steps. <br>Note: Only 5 lines will be shown!</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_6" class="bubble">
-    <p>Finally the totallity of this section below shows if we want to remove our investments and all the possible ways we can invest in a stock. After each of the current "next" clicks our payoff graph will change with respect to what we invest in, pay attention! As mentioned previously, hover over the payoff graph to observe your profit coupled with possible future stock price.</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>Finally the totallity of this section below shows if we want to remove 
+      our investments and all the possible ways we can invest in a stock. After 
+      each of the current "next" clicks our payoff graph will change with 
+      respect to what we invest in, pay attention! As mentioned previously, 
+      hover over the payoff graph to observe your profit coupled with possible 
+      future stock price.</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_7" class="bubble">
-    <p>The first thing we can invest in are simple shares. Where we can see some random linear payoff depending on the difference between the current and past stock price.</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>The first thing we can invest in are simple shares. Where we can see some 
+      linear payoff depending on the difference between the current and 
+      past stock price.</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_8" class="bubble">
-    <p>The second posibility is investing in option strategies. These are highly used strategies within investment trading. If you want information regarding all the strategies, click on the "help" button after the tour</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>The second posibility is investing in option strategies. These are highly 
+      used strategies within investment trading. If you want information 
+      regarding all the strategies, click on the "help" button after the tour</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="help_9" class="bubble">
-    <p>We finally have the option to invest in some single options to your liking. But pay attention to your money, because it can drop rapidly</p>
-    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" class="exitBut"/>X</a></span>
+    <p>We finally have the option to invest in some single options to your 
+      liking. But pay attention to your money, because it can drop rapidly</p>
+    <a onclick="tour2()" class="nextBut"/>Next</a> <span><a onclick="tour3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_1" class="bubble">
-    <p>Spreads are very important when investing in options. Investing in only a put or call option can result in losing your entire investment. Spreads are a way to both hedge your losses when the market does something unexpected or gives you a way to obtain payoffs which can only be obtained when combining options. In the following steps all the spreads below will be explained. <br> Note: Unknown terms used in the comming sections can be found in "terms" box above.</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>Spreads are very important when investing in options. Investing in only a 
+      put or call option can result in losing your entire investment. Spreads 
+      are a way to both limit your losses when the market does something 
+      unexpected or gives you a way to obtain payoffs which can only be obtained 
+      when combining options. In the following steps all the spreads below will 
+      be explained. Press the radio button for each strategy to see what it 
+      looks like in the payoff graph! <br> Note: Unknown terms used in the 
+      comming sections can be found in "terms" box above.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_2" class="bubble">
-    <p>The first is the bull spread. This spread is used when the investor expects the stock price to rise, but still wants to limit his loss after a possible decline in price. For example, assume Apple releases a brand new phone. You, as an investor, expect this new phone to be very popular and thus expect Apples stock price to rise. But you know there is also a small probability that the phone will not get a fantastic reception, and thus want to limit the loss after this occurance. <br> This spread is obtained by buying one ATM call option, and writing one OTM call option</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>The first is the bull spread. This spread is used when the investor 
+      expects the stock price to rise, but still wants to limit his loss after a 
+      possible decline in price. For example, assume Apple releases a brand new 
+      phone. You, as an investor, expect this new phone to be very popular and 
+      thus expect Apples stock price to rise. But you know there is also a small 
+      probability that the phone will not get a fantastic reception, and thus 
+      want to limit the loss after this occurance. <br> This spread is obtained 
+      by buying one ATM call option, and writing one OTM call option</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_3" class="bubble">
-    <p>The second is the bear spread. In general, the bear spread is used when the investor expects the stock to behave in the opposite way as the bull spread. Thus assuming Apple releases a new phone, you expect this phone to have a very poor reception, but know there is a chance that it will be popular. <br> This spread is obtained by buying one ATM call option, and writing one ITM call option.</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>The second is the bear spread. In general, the bear spread is used when 
+      the investor expects the stock to behave in the opposite way as the bull 
+      spread. Thus assuming Apple releases a new phone, you expect this phone to 
+      have a very poor reception, but know there is a chance that it will be 
+      popular. <br> This spread is obtained by buying one ATM call option, and 
+      writing one ITM call option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_4" class="bubble">
-    <p>The third, the back spread, is a somewhat odd looking spread. This spread is used when you know for sure that the stock price is going to change, and expect it to rise, but that the chance of it dropping is larger than, for example in the bull spread. As an example we can turn to Apple again. The release of the iWatch was not well known, and you expect it to have a great reception. But due to the fact that it is the first ever release, it could also be a bust. In both scenarios you will gain profit. <br> This spread is obtained by writing one ATM call option, and buying two OTM call options</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>The third, the back spread, is a somewhat odd looking spread. This spread 
+      is used when you know for sure that the stock price is going to change, 
+      and expect it to rise, but that the chance of it dropping is larger than, 
+      for example in the bull spread. As an example we can turn to Apple again. 
+      The release of the iWatch was not well known, and you expect it to have a 
+      great reception. But due to the fact that it is the first ever release, it 
+      could also be a bust. In both scenarios you will gain profit. <br> This 
+      spread is obtained by writing one ATM call option, and buying two OTM call 
+      options</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_5" class="bubble">
-    <p>The iron butterfly spread is the third spread. In this spread you expect the stock price to stay put, but limit your losses when it does move. An example would be a large period in time where neither Apple nor his impetitors do not expect to make any ground breaking annoucements. <br> This spread is obtained by writing an ATM call and put option, and buying an OTM call and put option.</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>The iron butterfly spread is the third spread. In this spread you expect 
+      the stock price to stay put, but limit your losses when it does move. An 
+      example would be a large period in time where neither Apple nor his 
+      impetitors do not expect to make any ground breaking annoucements. <br> 
+      This spread is obtained by writing an ATM call and put option, and buying 
+      an OTM call and put option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="info_6" class="bubble">
-    <p>Finally, the last spread I consider is the strangle spread. In this spread you expect expect the stock price to either rise or drop, but give equal probability to both occurances. An example would be when both Apple and one of its competitors releases a new item, but do not know the ins and outs of either of them. <br> This spread is obtained by buying one ATM call option and writing one ATM put option.</p>
-    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" class="exitBut"/>X</a></span>
+    <p>Finally, the last spread I consider is the strangle spread. In this 
+      spread you expect expect the stock price to either rise or drop, but give 
+      equal probability to both occurances. An example would be when both Apple 
+      and one of its competitors releases a new item, but do not know the ins 
+      and outs of either of them. <br> This spread is obtained by buying one ATM 
+      call option and writing one ATM put option.</p>
+    <a onclick="info2()" class="nextBut"/>Next</a> <span><a onclick="info3()" 
+       class="exitBut"/>X</a></span>
   </div>
 
   <div id="terms" class="box">
-  <p>S0 : Price at buying <br>
-  ST : Price at selling <br>
-  K  : Price to buy or sell stocks at in a future date (strike price) <br>
-  ATM: option where K ~ S0 (At the money) <br>
-  ITM: option where K &lt; S0 if call; K &gt; S0 if put (in the money) <br>
-  OTM: option where K &gt; S0 if call; K &lt; S0 if put (out the money)</p>
+  <p><b>S0</b> : Price at buying <br> <br>
+  <b>ST</b> : Price at selling <br> <br>
+  <b>K</b>  : Price to buy or sell stocks at in a future date (strike price) <br><br>
+  <b>Call</b>: The right, but not the obligation, to enter into a contract to buy 100
+  shares at the strike price at expiration date <br><br>
+  <b>Put</b>: The right, but not the obligation, to enter into a contract to sell 100
+  shares at the strike price at expiration date <br><br>
+  <b>ATM</b>: Option where K ~ S0 (At the money) <br><br>
+  <b>ITM</b>: Option where K &lt; S0 if call; K &gt; S0 if put (in the money) <br><br>
+  <b>OTM</b>: Option where K &gt; S0 if call; K &lt; S0 if put (out the money) <br><br>
+  <b>Write</b>: Sell an option <br><br>
+  <b>Short</b>: Sell a stock you borrow from your broker</p>
   <a onclick="termEnd()" class="exitBut"/>X</a>
 </div>
 
@@ -2098,11 +2424,16 @@ d3.json("finalData.json", function(error, data) {
 <div id="shareHeader">Shares (slide to buy or sell)</div>
 
 <form id="strats">
-<input id="bull" type="radio" name="strategy" value="Bull" onchange="bullSpread()">Bull Spread<br>
-<input id="bear" type="radio" name="strategy" value="Bear" onchange="bearSpread()">Bear Spread<br>
-<input id="back" type="radio" name="strategy" value="Back" onchange="backSpread()">Back Spread<br>
-<input id="ironButterfly" type="radio" name="strategy" value="ironButterfly" onchange="ironSpread()">Iron Butterfly Spread<br>
-<input id="straddle" type="radio" name="strategy" value="Bear" onchange="strangleSpread()">Straddle Spread<br>
+<input id="bull" type="radio" name="strategy" value="Bull" 
+       onchange="bullSpread()">Bull Spread<br>
+<input id="bear" type="radio" name="strategy" value="Bear" 
+       onchange="bearSpread()">Bear Spread<br>
+<input id="back" type="radio" name="strategy" value="Back" 
+       onchange="backSpread()">Back Spread<br>
+<input id="ironButterfly" type="radio" name="strategy" value="ironButterfly" 
+       onchange="ironSpread()">Iron Butterfly Spread<br>
+<input id="straddle" type="radio" name="strategy" value="Bear" 
+       onchange="strangleSpread()">Straddle Spread<br>
 </form>
 <div id="spreadInfo"></div>
 <button type="button" id="stockClear" onclick="clearStock()">Clear current</div>
