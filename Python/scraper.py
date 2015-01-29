@@ -136,12 +136,10 @@ def extract_prices(dom):
     put_strike = []
     for call in dom.by_id("optionsCallsTable").by_tag("table.details-table quote-table Fz-m")[:]:
         for strike in call.by_tag("tr")[2:]:
-            #call_strike.append((strike.by_tag("a")[0].content.encode('utf8'), strike.by_tag("div.option_entry Fz-m")[2].content.encode('utf8')))
             call_strike.append(strike.by_tag("a")[0].content.encode('utf8'))
             call_strike.append(strike.by_tag("div.option_entry Fz-m")[1].content.encode('utf8'))
     for put in dom.by_id("optionsPutsTable").by_tag("table.details-table quote-table Fz-m")[:]:
         for strike in put.by_tag("tr")[2:]:
-            #put_strike.append((strike.by_tag("a")[0].content.encode('utf8'), strike.by_tag("div.option_entry Fz-m")[2].content.encode('utf8')))
             put_strike.append(strike.by_tag("a")[0].content.encode('utf8'))
             put_strike.append(strike.by_tag("div.option_entry Fz-m")[1].content.encode('utf8'))
     return call_strike, put_strike

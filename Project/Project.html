@@ -468,7 +468,7 @@ body {
   <form id="optCounterPut">
     <input id = "numPut" type="number" name="quantity" min="-15" max="15" 
                 value="0" onchange="optGraphPut()">
-    <span id="optTypePut">Hello</span>
+    <span id="optTypePut">Buy put option</span>
   </form>
 
   <form id="optCounterCall">
@@ -505,7 +505,8 @@ var k = 0,
     remember,
     fullData,
     allData = [{},{},{},{},{},{},{},{}],
-    optionInfo = 0;
+    optionInfo = 0,
+    eps = d3.random.normal();
 
 // Margins   
 var margin = {top: 20, right: 525, bottom: 400, left: 130},
@@ -515,7 +516,6 @@ var margin = {top: 20, right: 525, bottom: 400, left: 130},
     marginBar = {top:380, right: 20, bottom: 120, left:950};
 
 // Width and heights
-//margins right + 135
 var width = 1280 - margin.left - margin.right,
     widthPayoff = 1280 - marginPayoff.left - marginPayoff.right,
     widthYBrush = 1280 - marginYBrush.left - marginYBrush.right,
@@ -536,8 +536,6 @@ var parseDate = d3.time.format("%d-%m-%Y").parse,
 
 // Colors
 var color = d3.scale.category10();
-
-var eps = d3.random.normal();
 
 // Scaling
 var x = d3.time.scale().range([0, width]),
@@ -661,8 +659,8 @@ var chart2 = svg.append("g")
 document.getElementById("money").innerHTML = "Money left: $" + 
                                               formatValue(totalInvestment)
 
-// Load option data (NOT USING YET)
-d3.json("optionsDataBetterLess.json", function(data) {optionsJSON = data;})
+// Load option data
+d3.json("optionsData.json", function(data) {optionsJSON = data;})
 
 // Main data
 d3.json("finalData.json", function(error, data) {
@@ -676,18 +674,19 @@ d3.json("finalData.json", function(error, data) {
   // Parse the date
   data.forEach(function(d) {
     d.date = parseDate(d.date);
-     });
+  });
 
   // Sort the date
   data.sort(function(a, b) {
-    return a.date - b.date;});
+    return a.date - b.date;
+  });
 
   // Assign the stocks a color and map the values 
   stockData = color.domain().map(function(name) {
     return {
       name: name,
       values: data.map(function(d) {
-          return {date: d.date, price: +d[name]};
+        return {date: d.date, price: +d[name]};
       })
     };
   });
@@ -703,10 +702,9 @@ d3.json("finalData.json", function(error, data) {
   // x,x2,x4 and y,y2,y4 domains
   x.domain(d3.extent(data, function(d) { return d.date; }));
 
-  y.domain([
-    0,
-    d3.max(stockData, function(c) {return d3.max(c.values, function(v) {
-                                                        return v.price; }); })
+  y.domain([0, d3.max(stockData, function(c) 
+       {return d3.max(c.values, function(v) {return v.price; }); 
+    })
   ]);
 
   x2.domain(x.domain());
@@ -761,8 +759,7 @@ d3.json("finalData.json", function(error, data) {
   // Add all the names with appropriate spacing  
   legend.selectAll('text')
     .data(stockData)
-    .enter()
-    .append("text")
+  .enter().append("text")
     .attr("id", function(d,i) {return d.name})
     .attr("x", width+ margin.left +10)
     .attr("y", function(d, i){ return (i+0.5) * space + margin.top;})
@@ -1498,7 +1495,6 @@ d3.json("finalData.json", function(error, data) {
       } else {return 0}
     }) 
     .style("visibility", "visible")
-    .text("works?")
     .on("change", function() {
       // Set the share data and call the functions
       allData[k]["shares"] = [this.value*5, ""]

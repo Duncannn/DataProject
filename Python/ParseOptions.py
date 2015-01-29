@@ -1,6 +1,6 @@
 import csv
 
-if __name__ == "__main__":
+def main():
 	option_type = "put"
 	S0 = 100.00
 	prices = []
@@ -77,3 +77,7 @@ if __name__ == "__main__":
 			else:
 				result += '     {"strike":'+str(combo[0])+', "price":'+str(combo[1])+'},\n'
 	print result
+
+
+if __name__ == "__main__":
+	main()
