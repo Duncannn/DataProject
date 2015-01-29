@@ -160,16 +160,18 @@ var toolTip2 = svg.append("g")
     .attr("transform","translate(" + marginPayoff.left + "," + 
                                      marginPayoff.top + ")");
 
-// Bar chart
+// Bar charts
 var chart1 = svg.append("g")
     .attr("class", "chart1")
     .attr("transform", "translate(" + marginBar.left +"," +marginBar.top +")");
 
-var bar2 = marginBar.top +heightBar+40; 
+var bar2 = marginBar.top +heightBar+40;
+
 var chart2 = svg.append("g")
     .attr("class", "chart2")
     .attr("transform", "translate(" + marginBar.left +"," +bar2 +")");
 
+// Set the initial money
 document.getElementById("money").innerHTML = "Money left: $" + 
                                               formatValue(totalInvestment);
 
@@ -484,19 +486,21 @@ d3.json("finalData.json", function(error, data) {
 // Tooltip Payoff Graph
 // ------------------------------------------------------------------
 
+  // Add circle to the tooltip
   toolTip2.append("circle")                                 
       .attr("class", "y")                                
       .style("fill", "none")                             
       .style("stroke", "black")                         
       .attr("r", 4);
 
-  // Add the text for the tooltip
+  // Add the text for the tooltip (profit)
   toolTip2.append("text")
       .attr("class", "y2")
       .attr("dx", -2)
       .attr("dy", -30)
       .style("font-size", "15px");
 
+  // Add second text to tooltip (price)
   toolTip2.append("text")
       .attr("class", "y3")
       .attr("dx", -2)
@@ -761,6 +765,8 @@ d3.json("finalData.json", function(error, data) {
             .attr("opacity" , 0)
             .transition().duration(1000)
             .attr("opacity" , 1);
+
+      // Add the date on top
       payoff.append("text")
             .attr("id", "resultsText")
             .attr("y", -10)
