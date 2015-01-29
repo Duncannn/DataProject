@@ -2,7 +2,7 @@ Visualising Investment Returns
 ===========
 ![](https://raw.githubusercontent.com/Duncannn/DataProject/master/doc/Layout_3.png)
 
-This project visualises the expected return after investing in either options and/or shares.
+This project visualises the potential return after investing in either options and/or shares.
 
 Copyright (c) 2015 Duncan Barker
 
