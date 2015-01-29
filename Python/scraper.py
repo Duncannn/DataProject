@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-# Name:
-# Student number:
-'''
-This script scrapes IMDB and outputs a CSV file with highest ranking tv series.
-'''
-# IF YOU WANT TO TEST YOUR ATTEMPT, RUN THE test-tvscraper.py SCRIPT.
+# Yahoo Finance scraper by Duncan Barker
 import os
 import sys
 import csv
@@ -134,10 +128,12 @@ def save_csv(filename, rows):
 def extract_prices(dom):
     call_strike = []
     put_strike = []
+    # Loop over the calls and append the strikes
     for call in dom.by_id("optionsCallsTable").by_tag("table.details-table quote-table Fz-m")[:]:
         for strike in call.by_tag("tr")[2:]:
             call_strike.append(strike.by_tag("a")[0].content.encode('utf8'))
             call_strike.append(strike.by_tag("div.option_entry Fz-m")[1].content.encode('utf8'))
+    # Loop over the puts and append the strikes
     for put in dom.by_id("optionsPutsTable").by_tag("table.details-table quote-table Fz-m")[:]:
         for strike in put.by_tag("tr")[2:]:
             put_strike.append(strike.by_tag("a")[0].content.encode('utf8'))
@@ -146,6 +142,7 @@ def extract_prices(dom):
 
 def exparations(stocks, MATURITY_DATES):
     rows = []
+    # For all stocks and all maturity dates
     for stock in stocks:
         for date in MATURITY_DATES:
             print "Scraping stock "+ stock + date[1]
@@ -153,6 +150,7 @@ def exparations(stocks, MATURITY_DATES):
             url = URL(new_URL)
             html = url.download()
             dom = DOM(html)
+            # Get prices and append them
             prices =  extract_prices(dom)
             rows.append(["CALL " + stock + date[1]] + prices[0])
             rows.append(["PUT " + stock + date[1]] + prices[1])
@@ -163,7 +161,4 @@ def exparations(stocks, MATURITY_DATES):
     
 if __name__ == '__main__':
     # Download the HTML file
-    #tvseries = exparations(stocks, MATURITY_DATES)
-
-# Have all those 10 stock charts, click on one of them and given the spread, strike prices and current stock price
-# which will then be some time at the 30th of januari, we check what the spread will be worth.
+    tvseries = exparations(stocks, MATURITY_DATES)

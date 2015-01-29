@@ -1,9 +1,8 @@
 import csv
 
 def main():
-	option_type = "put"
-	S0 = 100.00
 	prices = []
+	# Open csv and remove stuff
 	with open('PutCallData2JanLast.csv', 'rU') as csvfile:
 		spamreader = csv.reader(csvfile, delimiter=',')
 		for row in spamreader:
@@ -42,6 +41,7 @@ def main():
 	Netflix = []
 	RalphLauren = []
 	WYNN = []
+	# Ranges
 	for i in range(len(prices)):
 		if 0 <= i < 10:
 			Amazon.append(prices[i])
@@ -67,6 +67,7 @@ def main():
 			RalphLauren.append(prices[i])
 		elif 110 <= i < 120:
 			WYNN.append(prices[i])
+	# Print the results
 	result = ""
 	for j, date in enumerate(Amazon):
 		for i, combo in enumerate(date):

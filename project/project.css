@@ -1,0 +1,451 @@
+/* HTML elements */
+
+div {
+  display: block;
+}
+body {
+  font: 10px sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* Buttons */
+
+.nextBut {
+  opacity: 0.7;
+  padding: 2px 4px;
+  border:solid 1px #343634; 
+  background-color: maroon;
+  color:white;
+}
+.nextBut:hover {
+  opacity: 1;
+}
+.exitBut {
+  opacity: 0.8;
+  float:right;
+  font-weight: bold;
+}
+.exitBut:hover {
+  opacity: 1;
+  float:right;
+  font-weight: bold;
+}
+.button {
+  opacity: 0.7;
+  text-decoration:none; 
+  text-align:center; 
+  padding:19px 17px; 
+  border-left:solid 1px #343634; 
+  border-right:solid 1px #343634;
+  -webkit-border-radius:4px;
+  -moz-border-radius:4px; 
+  font:18px Arial, Helvetica, sans-serif; 
+  color:#E5FFFF;  
+}
+.button:hover {
+  opacity: 1;
+  border-left:solid 1px black; 
+  border-right:solid 1px black;
+}
+
+/* Boxes */
+
+#investClear {
+  position: absolute;
+  left:1200px;
+  top:225px;
+}
+#stockClear {
+  position: absolute;
+  left:925px;
+  top:225px;
+}
+.box {
+  width:400px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  color: #333;
+  display: inline-block;
+  font: 14px sans-serif;
+  padding: 6px 12px;
+  position: relative;
+  z-index: 1000;
+}
+.bubble1 {
+  width:300px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  color: #333;
+  display: inline-block;
+  font: 14px sans-serif;
+  padding: 12px;
+  position: relative;
+  z-index: 1000;
+}
+.bubble {
+  width:300px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  color: #333;
+  display: inline-block;
+  font: 14px/16px sans-serif;
+  padding: 6px 12px;
+  position: relative;
+  z-index: 1000;
+}
+.bubble:after,
+.bubble:before {
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 20px solid #eee;
+  bottom: -20px;
+  content: '';
+  left: 15%;
+  margin-left: -20px;
+  position: absolute;
+}
+
+/* Styling for second triangle (border) */
+
+.bubble:before {
+  border-left: 23px solid transparent;
+  border-right: 23px solid transparent;
+  border-top: 23px solid;
+  border-top-color: inherit;
+  bottom: -23px;
+  margin-left: -23px;
+}
+
+.bubble2 {
+  width:300px;
+  background-color: #eee;
+  border: 2px solid #333;
+  border-radius: 5px;
+  color: #333;
+  display: inline-block;
+  font: 14px/16px sans-serif;
+  padding: 6px 12px;
+  position: relative;
+  z-index: 1000;
+}
+.bubble2:after,
+.bubble2:before {
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 20px solid #eee;
+  top: -20px;
+  content: '';
+  left: 50%;
+  margin-left: -20px;
+  position: absolute;
+}
+.bubble2:before {
+  border-left: 23px solid transparent;
+  border-right: 23px solid transparent;
+  border-bottom: 23px solid;
+  border-bottom-color: inherit;
+  top: -23px;
+  margin-left: -23px;
+}
+
+/* Box for the terms */
+
+#terms {
+  visibility: hidden;
+  position:absolute;
+  left:200px;
+  top:80px;
+}
+
+/* Boxes for the about section */
+
+#about_1 {
+  visibility: hidden;
+  position:absolute;
+  left:200px;
+  top:80px;
+}
+#about_2 {
+  visibility: hidden;
+  position:absolute;
+  left:200px;
+  top:80px;
+}
+#about_3 {
+  visibility: hidden;
+  position:absolute;
+  left:200px;
+  top:80px;
+}
+
+/* Input types calls and puts */
+
+#optCounterCall {
+  visibility: hidden;
+  position: absolute;
+  left:925px;
+  top:400px;
+}
+#optCounterPut {
+  visibility: hidden;
+  position: absolute;
+  left:925px;
+  top:400px;
+}
+
+/* Lines in my visualisation */
+
+#verticalline {
+  position: absolute;
+  color:grey;
+  top: 70px;
+  left: 900px;
+  height: 700px;
+  border-left: solid;
+}
+
+#horizontalline1 {
+  position: absolute;
+  color:grey;
+  left:5px;
+  top: 485px;
+  width: 895px;
+  border-top: solid;
+}
+
+#horizontalline2 {
+  position: absolute;
+  color:grey;
+  left:900px;
+  top: 210px;
+  width: 370px;
+  border-top: solid;
+}
+
+/* Boxes for the tour section */
+
+#help_0 {
+  position: absolute;
+  left:160px;
+  top:45px;
+  visibility:hidden;
+}
+
+#help_1 {
+  position: absolute;
+  left:160px;
+  top:10px;
+  visibility:hidden;
+}
+#help_2 {
+  position: absolute;
+  left:625px;
+  top:400px;
+  visibility:hidden;
+}
+#help_3{
+  position: absolute;
+  left:138px;
+  top:220px;
+  visibility:hidden;
+}
+#help_4 {
+  position: absolute;
+  left:925px;
+  top:225px;
+  visibility:hidden;
+}
+#help_5 {
+  position: absolute;
+  left:100px;
+  top:300px;
+  visibility:hidden;
+}
+#help_6 {
+  position: absolute;
+  left:925px;
+  top:15px;
+  visibility:hidden;
+}
+#help_7 {
+  position: absolute;
+  left:925px;
+  top:85px;
+  visibility:hidden;
+}
+#help_8 {
+  position: absolute;
+  left:925px;
+  top:130px;
+  visibility:hidden;
+}
+#help_9 {
+  position: absolute;
+  left:925px;
+  top:250px;
+  visibility:hidden;
+}
+
+/* Boxes for the option section */
+
+#info_1 {
+  position: absolute;
+  left:900px;
+  top:5px;
+  visibility:hidden;
+}
+#info_2 {
+  position: absolute;
+  left:900px;
+  top:5px;
+  visibility:hidden;
+}
+#info_3{
+  position: absolute;
+  left:900px;
+  top:85px;
+  visibility:hidden;
+}
+#info_4 {
+  position: absolute;
+  left:900px;
+  top:40px;
+  visibility:hidden;
+}
+#info_5 {
+  position: absolute;
+  left:900px;
+  top:105px;
+  visibility:hidden;
+}
+#info_6 {
+  position: absolute;
+  left:900px;
+  top:140px;
+  visibility:hidden;
+}
+
+/* Bar chart section */
+
+.bar,
+.bar2 {
+  fill: steelblue;
+}
+.bar:hover,
+.bar2:hover {
+  fill:brown;
+}
+
+/* Main stock chart graph */
+
+.stock1 {
+  clip-path: url(#clip);
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+/* The brush */
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+/* The legend */
+
+.legend {
+  padding: 5px;
+  font: 10px sans-serif;
+  background: yellow;
+  box-shadow: 2px 2px 1px #888;
+}
+
+/* HTML right top of page */
+
+#investOppert {
+  position: absolute; 
+  top: 50px;
+  left: 900px;
+  clear:right;
+  display: inline-block;
+  word-wrap: break-word;
+  width:250px;
+  height:200px;
+  padding-left:10px;
+  padding-right:10px;
+  margin-right: 50px;
+  margin-left:50px;
+  margin-top:30px;
+  text-align: center;
+}
+
+/* Slider */
+
+#slider {
+  visibility:hidden;
+  position: absolute;
+  top: 260px;
+  left: 925px;
+}
+#shareSlider {
+  visibility:visible;
+  position: absolute;
+  top: 260px;
+  left: 1070px;
+}
+#shareHeader{
+  visibility:hidden;
+  position: absolute;
+  top: 250px;
+  left: 925px;
+}
+
+/* Strategy box */
+
+#strats {
+  visibility:hidden;
+  position: absolute;
+  top: 290px;
+  left: 925px;
+}
+
+/* Navigation section*/
+
+#navbar {
+  width:100%;
+  height:60px;
+  background-color:maroon;
+  border-bottom: 2px solid grey;
+}
+#nav li {
+  display: inline;
+  list-style-type: none;
+  padding-right: 30px;
+}
+#headContainer {
+  width:900px;
+  margin-right: auto;
+  margin-left: auto;
+}
+#name {
+  font-size: 16px;
+  font-weight: 250;
+  color: white;
+  padding:3.5px;
+}
